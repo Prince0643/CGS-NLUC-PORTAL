@@ -1,0 +1,624 @@
+-- phpMyAdmin SQL Dump
+-- version 5.2.1
+-- https://www.phpmyadmin.net/
+--
+-- Host: 127.0.0.1
+-- Generation Time: Jun 28, 2025 at 08:33 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
+
+SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
+SET time_zone = "+00:00";
+
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Database: `cgs`
+--
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `chatbot_responses`
+--
+
+CREATE TABLE `chatbot_responses` (
+  `id` int(11) NOT NULL,
+  `keyword` varchar(100) NOT NULL,
+  `response` text NOT NULL,
+  `category` varchar(50) DEFAULT NULL,
+  `is_active` tinyint(1) DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `chatbot_responses`
+--
+
+INSERT INTO `chatbot_responses` (`id`, `keyword`, `response`, `category`, `is_active`, `created_at`, `updated_at`) VALUES
+(1, 'grade', 'You can find your grade in the office.', NULL, 1, '2025-06-26 17:04:04', '2025-06-26 17:04:04'),
+(3, 'thank', 'You\'re welcome!', NULL, 1, '2025-06-26 17:10:11', '2025-06-26 17:10:11'),
+(4, 'subject', 'You can view your subjects in the \"Subject\" tab.', NULL, 1, '2025-06-26 17:11:01', '2025-06-26 17:11:01');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `courses`
+--
+
+CREATE TABLE `courses` (
+  `course_id` int(11) NOT NULL,
+  `course_code` varchar(50) NOT NULL,
+  `program_id` int(11) NOT NULL,
+  `course_description` text NOT NULL,
+  `units` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `courses`
+--
+
+INSERT INTO `courses` (`course_id`, `course_code`, `program_id`, `course_description`, `units`) VALUES
+(1, 'PHEA 301', 1, 'Philosophical and Critical Perspectives in Educational Administration', 3),
+(2, 'PHEA 311', 1, 'Administrative Reforms and Innovations in Education', 3),
+(3, 'PHEA 314', 1, 'Dissertation Writing', 6),
+(4, 'PHAG 313', 2, 'Program Planning and Project Development', 3),
+(5, 'PHAG 309', 2, 'Advanced Seed Production and Processing', 3),
+(6, 'PHAG 314', 2, 'Dissertation Writing', 6),
+(7, 'PHAS 310', 3, 'Program Planning and Project Development', 3),
+(8, 'PHAS 309', 3, 'Animal Diseases and Parasites', 3),
+(9, 'PHAS 314', 3, 'Dissertation Writing', 6),
+(10, 'MAEM 202', 4, 'Methods of Research', 3),
+(11, 'MAEM 203', 4, 'Legal Bases of Education', 3),
+(12, 'MAEM 213', 4, 'Thesis Writing 1', 3),
+(13, 'MATL 206', 5, 'Home Economic II (Sustainable Household Consumption)', 3),
+(14, 'MATL 204', 5, 'Administration and Supervision of TLE', 3),
+(15, 'MATL 213', 5, 'Thesis Writing', 3),
+(16, 'MSAG 210', 6, 'Advanced Soil Fertility and Fertility Evaluation', 3),
+(17, 'MSAG 203', 6, 'Advanced Farming Systems', 3),
+(18, 'MSAG 213', 6, 'Thesis Writing', 3),
+(19, 'MSAS 209', 7, 'Advanced Farming Systems', 3),
+(20, 'MSAS 208', 7, 'Livestock and Poultry Diseases Parasites', 3),
+(21, 'MSAS 213', 7, 'Thesis Writing', 3),
+(22, 'MSES 201', 8, 'Perspectives in Environmental Studies', 3),
+(23, 'MSES 211', 8, 'Environmental Laws & Policies', 3),
+(24, 'MSES 213', 8, 'Thesis Writing', 3),
+(25, 'MSAF 203', 9, 'Agroforestry Theory, Practice and Adoption', 3),
+(26, 'MSAF 206', 9, 'Silvopasture and Integrated Livestock System', 2),
+(27, 'MSAF 213', 9, 'Thesis Writing', 3),
+(28, 'MSAM 203', 10, 'Agribusiness Production and Operation Management', 3),
+(29, 'MSAM 210', 10, 'Agricultural Business Risk and Investment', 3),
+(30, 'MSAM 213', 10, 'Thesis Writing', 3),
+(31, 'MSRD 209', 11, 'Rural Community Institution Building', 3),
+(32, 'MSRD 208', 11, 'Rural Community Development and the Local Government', 3),
+(33, 'MSRD 213', 11, 'Thesis Writing', 3),
+(34, 'CCIS 204', 12, 'Information Security', 3),
+(35, 'MCIS 217', 12, 'Corporate Information Systems Plan', 3),
+(36, 'TWIS 220', 12, 'Thesis Writing', 3),
+(37, 'Seri 300', 13, 'Thesis Writing', 3),
+(38, 'MAEM 200', 4, 'Graduate Seminar', 3),
+(44, 'MAEM 201', 4, 'Perspectives in Education', 3),
+(56, 'MAEM 204', 4, 'Human Resource Management', 3),
+(57, 'MAEM 205', 4, 'Educational Planning', 3),
+(58, 'MAEM 206', 4, 'School Finance and Budgeting', 3),
+(59, 'MAEM 207', 4, 'Organization and Management of Educational Institutions', 3),
+(60, 'MAEM 208', 4, 'Communication in Educational Management', 3),
+(61, 'MAEM 209', 4, 'Development and Governance', 3),
+(62, 'MAEM 210', 4, 'Organizational Behavior', 3),
+(63, 'MAEM 211', 4, 'Trends in Human Public Relation Setting', 3),
+(64, 'MAEM 212', 4, 'Theory of Interest', 3),
+(101, 'MAEM 214', 4, 'Thesis Writing 2', 3),
+(131, 'MATL 200', 5, 'Graduate Seminar', 3),
+(132, 'MATL 201', 5, 'Perspectives in Education', 3),
+(133, 'MATL 202', 5, 'Methods of Research', 3),
+(134, 'MATL 203', 5, 'Livelihood Project Feasibility in TLE', 3),
+(135, 'MATL 205', 5, 'Home Economics I (Family Life Education Programs)', 3),
+(136, 'MATL 207', 5, 'Agri-fishery Arts I (Farming Systems and Production Management)', 3),
+(137, 'MATL 208', 5, 'Agri-fishery Arts II (Principles, Methods, and Trends in Aquaculture)', 3),
+(138, 'MATL 209', 5, 'ICT I (Advanced Multimedia Applications)', 3),
+(139, 'MATL 210', 5, 'ICT II (Advanced Web Application Development)', 3),
+(140, 'MATL 211', 5, 'Industrial Arts I (Industry standards and regulations)', 3),
+(141, 'MATL 212', 5, 'Industrial Arts II (Skills Development Education)', 3),
+(142, 'MATL 214', 5, 'Thesis Writing 2', 3),
+(146, 'MSAF 200', 9, 'Graduate Seminar', 3),
+(147, 'MSAF 201', 9, 'Perspectives in Agroforestry', 3),
+(148, 'MSAF 202', 9, 'Methods of Research', 3),
+(149, 'MSAF 204', 9, 'Ecological Basis of Agroforestry', 3),
+(150, 'MSAF 205', 9, 'Project Development and Management in Agroforestry', 3),
+(151, 'MSAF 207', 9, 'Agroforestry Enterprise Development', 3),
+(152, 'MSAF 208', 9, 'Soil Productivity in Agroforestry', 3),
+(153, 'MSAF 209', 9, 'Agroforestry Systems Design and Management', 3),
+(154, 'MSAF 210', 9, 'Social Forestry and Governance', 3),
+(155, 'MSAF 211', 9, 'Tree Biology and Silviculture', 3),
+(156, 'MSAF 212', 9, 'Agroforestry Policy and Planning', 3),
+(157, 'MSAF 214', 9, 'Thesis Writing 2', 3),
+(161, 'MSAG 200', 6, 'Graduate Seminar', 3),
+(162, 'MSAG 201', 6, 'Perspectives in Agronomy', 3),
+(163, 'MSAG 202', 6, 'Methods of Research', 3),
+(164, 'MSAG 204', 6, 'Advanced Field Crop Physiology and Ecology', 3),
+(165, 'MSAG 205', 6, 'Advanced Plant Breeding', 3),
+(166, 'MSAG 206', 6, 'Sustainable Agriculture', 3),
+(167, 'MSAG 207', 6, 'Advanced Cereal Production', 3),
+(168, 'MSAG 208', 6, 'Advanced Field Legumes, Root Crops and Forage Crops', 3),
+(169, 'MSAG 209', 6, 'Crop Pest Management', 3),
+(170, 'MSAG 211', 6, 'Post Harvest Field Crop Physiology and Technology', 3),
+(171, 'MSAG 212', 6, 'Advanced Field Crop Processing, Storage and Marketing', 3),
+(172, 'MSAG 214', 6, 'Thesis Writing 2', 3),
+(176, 'MSAM 200', 10, 'Graduate Seminar', 3),
+(177, 'MSAM 201', 10, 'Perspectives in Agribusiness Management', 3),
+(178, 'MSAM 202', 10, 'Methods of Research', 3),
+(179, 'MSAM 204', 10, 'Financial Management Accounting and Control', 3),
+(180, 'MSAM 205', 10, 'Agribusiness Cooperative & Entrepreneurship Development', 3),
+(181, 'MSAM 206', 10, 'Personnel Management & Industrial Relations', 3),
+(182, 'MSAM 207', 10, 'Advanced Marketing Management', 3),
+(183, 'MSAM 208', 10, 'Technology Commercialization & Technopreneurship', 3),
+(184, 'MSAM 209', 10, 'Innovative and Integrative Arrangements in Managing Agribusiness Enterprises', 3),
+(185, 'MSAM 211', 10, 'Sustainable Agri-Farming Systems', 3),
+(186, 'MSAM 212', 10, 'Strategic Management in Agribusiness', 3),
+(187, 'MSAM 214', 10, 'Thesis Writing 2', 3),
+(191, 'MSES 200', 8, 'Graduate Seminar', 3),
+(192, 'MSES 202', 8, 'Methods of Research', 3),
+(193, 'MSES 203', 8, 'Coastal Resources Management', 3),
+(194, 'MSES 204', 8, 'Forest Resources Management', 3),
+(195, 'MSES 205', 8, 'Sustainable Environmental and Development', 3),
+(196, 'MSES 206', 8, 'Culture and the Environment', 3),
+(197, 'MSES 207', 8, 'Settlement Systems and Land Use', 3),
+(198, 'MSES 208', 8, 'Environmental Impact Assessment', 3),
+(199, 'MSES 209', 8, 'Aquatic Ecosystem', 3),
+(200, 'MSES 210', 8, 'Terrestrial Ecosystem', 3),
+(201, 'MSES 212', 8, 'Environmental Management', 3),
+(202, 'MSES 214', 8, 'Thesis Writing 2', 3),
+(206, 'MSRD 200', 11, 'Graduate Seminar', 3),
+(207, 'MSRD 201', 11, 'Perspectives in Rural Community Development', 3),
+(208, 'MSRD 202', 11, 'Methods of Research', 3),
+(209, 'MSRD 203', 11, 'Rural Sociology', 3),
+(210, 'MSRD 204', 11, 'Socio-Cultural Innovations', 3),
+(211, 'MSRD 205', 11, 'Philippine Rural Community Structure and Change', 3),
+(212, 'MSRD 206', 11, 'Program Planning and Management of Rural Development', 3),
+(213, 'MSRD 207', 11, 'Evaluation of Rural Community Development', 3),
+(214, 'MSRD 210', 11, 'Sustainable Agriculture and Development', 3),
+(215, 'MSRD 211', 11, 'Community and Natural Resources Management', 3),
+(216, 'MSRD 212', 11, 'Community and Economic Development', 3),
+(217, 'MSRD 214', 11, 'Thesis Writing 2', 3),
+(236, 'CCIS 201', 12, 'Digital Transformation of Organizations', 3),
+(237, 'CCIS 202', 12, 'Agile Project Management and Risk Management', 3),
+(238, 'CCIS 203', 12, 'Legal Issues in Information Systems', 3),
+(239, 'CCIS 205', 12, 'Knowledge Management', 3),
+(240, 'MCIS 210', 12, 'Data Science and Analytics', 3),
+(241, 'MCIS 211', 12, 'Enterprise Resource Planning (ERP) – Business Processes', 3),
+(242, 'MCIS 212', 12, 'Enterprise Resource Planning (ERP) – Customization and configuration', 3),
+(243, 'MCIS 213', 12, 'Performance Management and Business Intelligence', 3),
+(244, 'MCIS 214', 12, 'Decision Support and Predictive Analytics', 3),
+(245, 'MCIS 215', 12, 'Corporate Information Systems Plan', 3),
+(246, 'MCIS 216', 12, 'Emerging Technologies and Issues', 3),
+(247, 'MCIS 218', 12, 'Information Systems Architecture', 3),
+(248, 'MCIS 219', 12, 'Industry Immersion', 3),
+(249, 'ISBA 102', 12, 'Fundamentals of Enterprise Data Management', 3),
+(250, 'ISPC 104', 12, 'IT Infrastructure and Network Technologies', 3),
+(251, 'ISBA 101', 12, 'Fundamentals of Business Analytics', 3),
+(252, 'ISPC 107', 12, 'IS Project Management', 3),
+(253, 'ISPC 112', 12, 'IS Strategy Management & Acquisition', 3),
+(254, 'ISPC 108', 12, 'Enterprise Systems & Architecture', 3),
+(255, 'ISPC 109', 12, 'Evaluation of Business Process', 3),
+(259, 'PHAG 300', 2, 'Graduate Seminar', 3),
+(260, 'PHAG 301', 2, 'Philosophical and Critical Perspectives in Agronomy', 3),
+(261, 'PHAG 302', 2, 'Research Designs and Methodologies', 3),
+(262, 'PHAG 303', 2, 'Knowledge Management in Agronomy', 3),
+(263, 'PHAG 304', 2, 'Applied Plant Breeding and Population Genetics', 3),
+(264, 'PHAG 305', 2, 'Seed Science and Technology', 3),
+(265, 'PHAG 306', 2, 'Physiology of Herbicides and its Interaction to Soil', 3),
+(266, 'PHAG 307', 2, 'Advanced Agronomic Crop Management', 3),
+(267, 'PHAG 308', 2, 'Advanced Crop Pest Management', 3),
+(268, 'PHAG 310', 2, 'Environmental Physiology', 3),
+(269, 'PHAG 311', 2, 'Advanced Plant Growth and Development', 3),
+(270, 'PHAG 312', 2, 'Sustainable Development', 3),
+(271, 'PHAG 315', 2, 'Dissertation Writing 2', 6),
+(275, 'PHAS 300', 3, 'Graduate Seminar', 3),
+(276, 'PHAS 301', 3, 'Philosophical and Critical Perspectives in Animal Science', 3),
+(277, 'PHAS 302', 3, 'Research Designs and Methodologies', 3),
+(278, 'PHAS 303', 3, 'Knowledge Management in Animal Science', 3),
+(279, 'PHAS 304', 3, 'Advanced Ruminant Production', 3),
+(280, 'PHAS 305', 3, 'Advanced Poultry Production', 3),
+(281, 'PHAS 306', 3, 'Advanced Swine Production', 3),
+(282, 'PHAS 307', 3, 'Advanced Forage Production and Pasture Management', 3),
+(283, 'PHAS 308', 3, 'Exotic and Wild Animal', 3),
+(284, 'PHAS 311', 3, 'Environmental Animal Health Management', 3),
+(285, 'PHAS 312', 3, 'Livestock Endocrinology', 3),
+(286, 'PHAS 313', 3, 'Advanced Farming Systems', 3),
+(287, 'PHAS 315', 3, 'Dissertation Writing 2', 6),
+(291, 'PHEA 300', 1, 'Graduate Seminar', 3),
+(292, 'PHEA 302', 1, 'Research Designs and Methodology', 3),
+(293, 'PHEA 303', 1, 'Knowledge Management in Educational Administration', 3),
+(294, 'PHEA 304', 1, 'Theories & Practices in Administration & Supervision', 3),
+(295, 'PHEA 305', 1, 'Qualitative Research Methods in Educational Administration and Organization Development', 3),
+(296, 'PHEA 306', 1, 'Educational Leadership', 3),
+(297, 'PHEA 307', 1, 'Legal Issues and Administrative Policies in Education', 3),
+(298, 'PHEA 308', 1, 'Systems Analysis in Education', 3),
+(299, 'PHEA 309', 1, 'Economics of Education: Fiscal Administration', 3),
+(300, 'PHEA 310', 1, 'Trends and Issues in Educational Planning', 3),
+(301, 'PHEA 312', 1, 'Quantitative Research Methods in Educational Administration and Organization Development', 3),
+(302, 'PHEA 313', 1, 'Methodology and Supervision of Higher Education', 3),
+(303, 'PHEA 315', 1, 'Environmental Planning and Management for Sustainable Development', 3),
+(304, 'PHEA 316', 1, 'Dissertation Writing 1', 6),
+(305, 'PHEA 317', 1, 'Dissertation Writing 2', 6);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `course_faculty`
+--
+
+CREATE TABLE `course_faculty` (
+  `course_id` int(11) NOT NULL,
+  `faculty_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `course_faculty`
+--
+
+INSERT INTO `course_faculty` (`course_id`, `faculty_id`) VALUES
+(1, 1),
+(2, 2),
+(3, 3),
+(4, 4),
+(5, 5),
+(6, 3),
+(7, 4),
+(8, 6),
+(9, 3),
+(10, 7),
+(11, 8),
+(12, 3),
+(13, 9),
+(14, 1),
+(14, 9),
+(15, 3),
+(16, 10),
+(17, 5),
+(18, 3),
+(19, 6),
+(20, 6),
+(21, 3),
+(22, 11),
+(23, 12),
+(24, 3),
+(25, 13),
+(26, 14),
+(27, 3),
+(28, 15),
+(29, 16),
+(30, 3),
+(31, 17),
+(32, 17),
+(33, 3),
+(34, 18),
+(35, 19),
+(36, 3),
+(37, 3);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `faculty`
+--
+
+CREATE TABLE `faculty` (
+  `faculty_id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `faculty`
+--
+
+INSERT INTO `faculty` (`faculty_id`, `name`) VALUES
+(15, 'AGLaquidan'),
+(5, 'AVSagun'),
+(18, 'DANeri'),
+(12, 'DAVilar'),
+(8, 'DPLicay'),
+(19, 'ECEbuenga'),
+(6, 'FMCamalig'),
+(1, 'GSNisperos'),
+(17, 'GTBondot'),
+(14, 'JCortado'),
+(11, 'JJCAndrada'),
+(16, 'JNQuinquito'),
+(2, 'JRETabafunda'),
+(13, 'LDGavina'),
+(7, 'MBMendoza'),
+(9, 'NBTugelida'),
+(4, 'PPFontanilla'),
+(3, 'TBA'),
+(10, 'VMLibunao');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `programs`
+--
+
+CREATE TABLE `programs` (
+  `program_id` int(11) NOT NULL,
+  `program_name` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `programs`
+--
+
+INSERT INTO `programs` (`program_id`, `program_name`) VALUES
+(2, 'Doctor of Philosophy in Agronomy'),
+(3, 'Doctor of Philosophy in Animal Science'),
+(1, 'Doctor of Philosophy in Educational Administration'),
+(4, 'Master of Arts in Educational Management'),
+(10, 'Master of Science in Agribusiness Management'),
+(9, 'Master of Science in Agroforestry'),
+(6, 'Master of Science in Agronomy'),
+(7, 'Master of Science in Animal Science'),
+(5, 'Master of Science in Education (TLE)'),
+(8, 'Master of Science in Environmental Studies'),
+(12, 'Master of Science in Information Systems'),
+(11, 'Master of Science in Rural Community Development'),
+(13, 'Master of Science in Sericulture');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `schedules`
+--
+
+CREATE TABLE `schedules` (
+  `schedule_id` int(11) NOT NULL,
+  `course_id` int(11) NOT NULL,
+  `day_time` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `schedules`
+--
+
+INSERT INTO `schedules` (`schedule_id`, `course_id`, `day_time`) VALUES
+(1, 1, '8-12S'),
+(2, 1, '5:30-8:30W'),
+(3, 1, '5:30-7:30F'),
+(4, 2, '1-5S'),
+(5, 2, '5:30-8:30T'),
+(6, 2, '5:30-7:30Th'),
+(7, 3, 'TBA'),
+(8, 4, '8-12S'),
+(9, 4, '5:30-8:30W'),
+(10, 4, '5:30-7:30F'),
+(11, 5, '1-5S'),
+(12, 5, '5:30-8:30T'),
+(13, 5, '5:30-7:30Th'),
+(14, 6, 'TBA'),
+(15, 7, '8-12S'),
+(16, 7, '5:30-8:30W'),
+(17, 7, '5:30-7:30F'),
+(18, 8, '1-5S'),
+(19, 8, '5:30-8:30T'),
+(20, 8, '5:30-7:30Th'),
+(21, 9, 'TBA'),
+(22, 10, '8-12S'),
+(23, 10, '5:30-8:30W'),
+(24, 10, '5:30-7:30F'),
+(25, 11, '1-5S'),
+(26, 11, '5:30-8:30T'),
+(27, 11, '5:30-7:30Th'),
+(28, 12, 'TBA'),
+(29, 13, '8-12S'),
+(30, 13, '5:30-8:30W'),
+(31, 13, '5:30-7:30F'),
+(32, 14, '1-5S'),
+(33, 14, '5:30-8:30T'),
+(34, 14, '5:30-7:30Th'),
+(35, 15, 'TBA'),
+(36, 16, '8-12S'),
+(37, 16, '5:30-8:30W'),
+(38, 16, '5:30-7:30F'),
+(39, 17, '1-5S'),
+(40, 17, '5:30-8:30T'),
+(41, 17, '5:30-7:30Th'),
+(42, 18, 'TBA'),
+(43, 19, '1-6S'),
+(44, 19, '5:30-8:30T'),
+(45, 20, '8-12S'),
+(46, 20, '5:30-8:30W'),
+(47, 20, '5:30-7:30F'),
+(48, 21, 'TBA'),
+(49, 22, '8-12S'),
+(50, 22, '5:30-8:30W'),
+(51, 22, '5:30-7:30F'),
+(52, 23, '1-5S'),
+(53, 23, '5:30-8:30T'),
+(54, 23, '5:30-7:30Th'),
+(55, 24, 'TBA'),
+(56, 25, '8-12S'),
+(57, 25, '5:30-8:30W'),
+(58, 25, '5:30-7:30F'),
+(59, 26, '1-5S'),
+(60, 26, '5:30-8:30T'),
+(61, 26, '5:30-7:30Th'),
+(62, 27, 'TBA'),
+(63, 28, '8-12S'),
+(64, 28, '5:30-8:30W'),
+(65, 28, '5:30-7:30F'),
+(66, 29, '1-5S'),
+(67, 29, '5:30-8:30T'),
+(68, 29, '5:30-7:30Th'),
+(69, 30, 'TBA'),
+(70, 31, '8-12S'),
+(71, 31, '5:30-8:30W'),
+(72, 31, '5:30-7:30F'),
+(73, 32, '1-5S'),
+(74, 32, '5:30-8:30T'),
+(75, 32, '5:30-7:30Th'),
+(76, 33, 'TBA'),
+(77, 34, '1-5S'),
+(78, 34, '5:30-8:30T'),
+(79, 34, '5:30-7:30Th'),
+(80, 35, '8-12S'),
+(81, 35, '5:30-8:30W'),
+(82, 35, '5:30-7:30F'),
+(83, 36, 'TBA'),
+(84, 37, 'TBA');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `id_number` varchar(50) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `user_level` enum('admin','student') NOT NULL DEFAULT 'student'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `id_number`, `email`, `password`, `created_at`, `user_level`) VALUES
+(1, '12345', 'user@example.com', 'pass', '2025-06-24 06:37:01', 'student'),
+(2, '2111111', 'tolentinochristian89@gmail.com', '$2b$10$QEhwd19dSM1E7RcosiAVYOtAu5bD3eUXjesze6to7YCsdcNc2Pwj2', '2025-06-24 13:03:59', 'student'),
+(3, '2113456', 'asd@gmail.com', '$2b$10$9ZyJ3ySjVm/ajP1P/vmN4uei.9.5YbMTPeR6b1c.jIbMcLfmdW7vK', '2025-06-24 13:16:27', 'student'),
+(4, '211-1003-1', 'tolentino@gmail.com', '$2b$10$C8T1WMh7VEYNcmz2UEn1yOJQhwfy7vnHXlLCdWBHO10iVLIm8AY4y', '2025-06-24 13:29:30', 'student'),
+(5, 'admin01', 'admin@cgs.edu', 'yawa', '2025-06-25 16:03:44', 'admin'),
+(6, 'admin02', 'admin2@cgs.edu', '$2b$10$RhVLs/JwrUyGaC/7ZvftD.hggvXtffTUsu4pQrbk8qfnGxhpO3hgy', '2025-06-25 16:26:09', 'admin');
+
+--
+-- Indexes for dumped tables
+--
+
+--
+-- Indexes for table `chatbot_responses`
+--
+ALTER TABLE `chatbot_responses`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `courses`
+--
+ALTER TABLE `courses`
+  ADD PRIMARY KEY (`course_id`),
+  ADD UNIQUE KEY `course_code` (`course_code`),
+  ADD KEY `program_id` (`program_id`);
+
+--
+-- Indexes for table `course_faculty`
+--
+ALTER TABLE `course_faculty`
+  ADD PRIMARY KEY (`course_id`,`faculty_id`),
+  ADD KEY `faculty_id` (`faculty_id`);
+
+--
+-- Indexes for table `faculty`
+--
+ALTER TABLE `faculty`
+  ADD PRIMARY KEY (`faculty_id`),
+  ADD UNIQUE KEY `name` (`name`);
+
+--
+-- Indexes for table `programs`
+--
+ALTER TABLE `programs`
+  ADD PRIMARY KEY (`program_id`),
+  ADD UNIQUE KEY `program_name` (`program_name`);
+
+--
+-- Indexes for table `schedules`
+--
+ALTER TABLE `schedules`
+  ADD PRIMARY KEY (`schedule_id`),
+  ADD KEY `course_id` (`course_id`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id_number` (`id_number`),
+  ADD UNIQUE KEY `email` (`email`),
+  ADD KEY `idx_email` (`email`),
+  ADD KEY `idx_id_number` (`id_number`),
+  ADD KEY `idx_user_level` (`user_level`);
+
+--
+-- AUTO_INCREMENT for dumped tables
+--
+
+--
+-- AUTO_INCREMENT for table `chatbot_responses`
+--
+ALTER TABLE `chatbot_responses`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `courses`
+--
+ALTER TABLE `courses`
+  MODIFY `course_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=309;
+
+--
+-- AUTO_INCREMENT for table `faculty`
+--
+ALTER TABLE `faculty`
+  MODIFY `faculty_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+
+--
+-- AUTO_INCREMENT for table `programs`
+--
+ALTER TABLE `programs`
+  MODIFY `program_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT for table `schedules`
+--
+ALTER TABLE `schedules`
+  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `courses`
+--
+ALTER TABLE `courses`
+  ADD CONSTRAINT `courses_ibfk_1` FOREIGN KEY (`program_id`) REFERENCES `programs` (`program_id`);
+
+--
+-- Constraints for table `course_faculty`
+--
+ALTER TABLE `course_faculty`
+  ADD CONSTRAINT `course_faculty_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`),
+  ADD CONSTRAINT `course_faculty_ibfk_2` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`faculty_id`);
+
+--
+-- Constraints for table `schedules`
+--
+ALTER TABLE `schedules`
+  ADD CONSTRAINT `schedules_ibfk_1` FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`);
+COMMIT;
+
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

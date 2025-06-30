@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Citizens Charter - CGS Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 bg-indigo-700 text-white flex flex-col">
+            <div class="p-5 text-2xl font-bold border-b border-indigo-500">CGS Portal</div>
+            <ul class="flex-1 mt-4 space-y-1 px-4">
+                <li><a href="home.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Home</a></li>
+                <li><a href="#" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Subjects</a></li>
+                <li><a href="checklist.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Checklist</a></li>
+                <li><a href="citizens-charter.html" class="block py-2 px-3 rounded bg-indigo-600 transition">Citizens
+                        Charter</a></li>
+                <li><a href="chatbot.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Chatbot</a>
+                </li>
+                <li><a href="settings.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Settings</a>
+                </li>
+            </ul>
+            <div class="p-4 border-t border-indigo-600 text-sm">
+                Logged in as: <span class="font-semibold" id="userEmail">User</span>
+            </div>
+        </div>
+
+        <!-- Main PDF Viewer -->
+        <div class="flex-1 bg-white p-6">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4">Citizens Charter</h1>
+            <div class="h-[80vh] border rounded shadow overflow-hidden">
+                <iframe src="assets/citizens-charter.pdf" width="100%" height="100%" class="w-full h-full"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('user'));
+        document.getElementById('userEmail').textContent = user?.email || 'User';
+    </script>
+</body>
+
+</html>
