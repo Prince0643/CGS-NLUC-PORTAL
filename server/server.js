@@ -379,13 +379,13 @@ app.get('/api/enrollment/:userId', async (req, res) => {
     }
 });
 
-// Serve static files from React frontend
-app.use(express.static(path.join(__dirname, 'client')));
+// ✅ Correct for your actual folder
+app.use(express.static(path.join(__dirname, '../client')));
 
-// Catch-all route for React (for deep linking and routing)
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client/login.html'));
+    res.sendFile(path.join(__dirname, '../client/login.html'));
 });
+
 
 
 // Start server
