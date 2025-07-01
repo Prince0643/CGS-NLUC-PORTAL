@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Courses Offered | CGS Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen gradient-bg">
+    <div class="container mx-auto py-12 px-4">
+        <div class="bg-white rounded-lg shadow-lg p-8 max-w-full mx-auto">
+            <!-- Back button -->
+            <div class="mb-6">
+                <button onclick="window.history.back()" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                    ← Back to Login
+                </button>
+            </div>
+
+            <!-- Page header -->
+            <div class="text-center mb-10">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Courses Offered</h1>
+                <p class="text-gray-600">Explore our comprehensive course offerings</p>
+            </div>
+
+            <!-- Courses Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white border border-gray-200">
+                    <thead>
+                        <tr class="w-full bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
+                            <th class="py-3 px-6 text-left">Course Code</th>
+                            <th class="py-3 px-6 text-left">Program</th>
+                            <th class="py-3 px-6 text-left">Description</th>
+                            <th class="py-3 px-6 text-left">Units</th>
+                            <th class="py-3 px-6 text-left">Schedule</th>
+                            <th class="py-3 px-6 text-left">Faculty</th>
+                        </tr>
+                    </thead>
+                    <tbody id="coursesTableBody" class="text-gray-600 text-sm font-light">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+                <!-- Pagination Controls -->
+                <div class="flex justify-center items-center space-x-4 mt-6">
+                    <button id="prevPage" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Previous</button>
+                    <span id="pageInfo" class="text-gray-700 font-medium"></span>
+                    <button id="nextPage" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Next</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+       
+            
+        async function fetchCourses() {
+            try {
+                const response = await fetch('http://localhost:5000/api/courses');
+                const courses = await response.json();
+
+                const tableBody = document.getElementById('coursesTableBody');
+                tableBody.innerHTML = '';
+
+                courses.forEach(course => {
+                    const row = `
+            <tr class="border-b border-gray-200 hover:bg-gray-100">
+              <td class="py-3 px-6">${course.course_code}</td>
+              <td class="py-3 px-6">${course.program_name}</td>
+              <td class="py-3 px-6">${course.course_description}</td>
+              <td class="py-3 px-6">${course.units}</td>
+              <td class="py-3 px-6">${(course.schedules || []).join(', ')}</td>
+            <td class="py-3 px-6">${(course.faculty || []).join(', ')}</td>
+
+            </tr>
+          `;
+                    tableBody.innerHTML += row;
+                });
+            } catch (error) {
+                console.error('Error fetching courses:', error);
+            }
+        }
+
+        window.onload = fetchCourses;
+    </script>
+    <script>
+        let courses = [];
+        let currentPage = 1;
+        const rowsPerPage = 10;
+
+        async function fetchCourses() {
+            try {
+                const response = await fetch('http://localhost:5000/api/courses');
+                courses = await response.json();
+                renderTable();
+                updatePageInfo();
+            } catch (error) {
+                console.error('Error fetching courses:', error);
+            }
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('coursesTableBody');
+            tableBody.innerHTML = '';
+
+            const start = (currentPage - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            const paginatedCourses = courses.slice(start, end);
+
+            paginatedCourses.forEach(course => {
+                const row = `
+                        <tr class="border-b border-gray-200 hover:bg-gray-100">
+                            <td class="py-3 px-6">${course.course_code}</td>
+                            <td class="py-3 px-6">${course.program_name}</td>
+                            <td class="py-3 px-6">${course.course_description}</td>
+                            <td class="py-3 px-6">${course.units}</td>
+                            <td class="py-3 px-6">${(course.schedules || []).join(', ')}</td>
+                            <td class="py-3 px-6">${(course.faculty || []).join(', ')}</td>
+                        </tr>
+                    `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        function updatePageInfo() {
+            const totalPages = Math.ceil(courses.length / rowsPerPage);
+            document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+
+            document.getElementById('prevPage').disabled = currentPage === 1;
+            document.getElementById('nextPage').disabled = currentPage === totalPages;
+        }
+
+        document.getElementById('prevPage').addEventListener('click', () => {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+                updatePageInfo();
+            }
+        });
+
+        document.getElementById('nextPage').addEventListener('click', () => {
+            const totalPages = Math.ceil(courses.length / rowsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+                updatePageInfo();
+            }
+        });
+
+        window.onload = fetchCourses;
+    </script>
+    
+</body>
+
+</html>
