@@ -68,6 +68,5 @@ jobs:
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'cgs-nluc-portal'
-          slot-name: 'Production'
           package: release.zip
           
