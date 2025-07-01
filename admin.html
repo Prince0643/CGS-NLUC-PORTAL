@@ -119,42 +119,6 @@
                             </div>
                         </div>
 
-                        {/* Student Management */}
-                        <div id="students" className="bg-white rounded-lg shadow p-6 mt-6">
-                            <h2 className="text-xl font-semibold mb-4">Enroll New Student</h2>
-                            <form
-                                onSubmit={async (e) => {
-                                    e.preventDefault();
-                                    const student = {
-                                        id_number: e.target.id_number.value,
-                                        email: e.target.email.value,
-                                        password: e.target.password.value,
-                                        program_id: e.target.program_id.value
-                                    };
-
-                                    const res = await fetch('http://localhost:5000/api/admin/enroll-student', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify(student)
-                                    });
-
-                                    const data = await res.json();
-                                    alert(data.message || data.error);
-                                    e.target.reset();
-                                }}
-                                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-                            >
-                                <input type="text" name="id_number" placeholder="ID Number" className="border px-3 py-2 rounded" required />
-                                <input type="email" name="email" placeholder="Email" className="border px-3 py-2 rounded" required />
-                                <input type="password" name="password" placeholder="Password" className="border px-3 py-2 rounded" required />
-                                <input type="number" name="program_id" placeholder="Program ID (e.g. 1)" className="border px-3 py-2 rounded" required />
-                                <button type="submit" className="col-span-1 md:col-span-2 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-                                    Enroll Student
-                                </button>
-                            </form>
-                        </div>
-
-
                         {/* Chatbot Management */}
                         <div id="chatbot" className="bg-white rounded-lg shadow p-6 mt-6">
                             <h2 className="text-xl font-semibold mb-4">Chatbot Responses</h2>

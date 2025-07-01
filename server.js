@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Database configuration (replace with your actual credentials)
+// Database configuration
 const dbConfig = {
     host: 'localhost',
     user: 'root',
@@ -36,83 +36,38 @@ async function testConnection() {
     }
 }
 
-// Registration endpoint
-app.post('/api/register', async (req, res) => {
-    try {
-        const { id_number, email, password } = req.body;
-
-        // Basic validation
-        if (!id_number || !email || !password) {
-            return res.status(400).json({ error: 'All fields are required' });
-        }
-
-        // Check if email or ID already exists
-        const [existingUsers] = await pool.query(
-            'SELECT * FROM users WHERE email = ? OR id_number = ?',
-            [email, id_number]
-        );
-
-        if (existingUsers.length > 0) {
-            const error = existingUsers.some(u => u.email === email)
-                ? 'Email already registered'
-                : 'ID number already registered';
-            return res.status(400).json({ error });
-        }
-
-        // Hash password
-        const saltRounds = 10;
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-        // Insert new user
-        const [result] = await pool.query(
-            'INSERT INTO users (id_number, email, password) VALUES (?, ?, ?)',
-            [id_number, email, hashedPassword]
-        );
-
-        res.status(201).json({
-            message: 'User  registered successfully',
-            userId: result.insertId
-        });
-
-    } catch (error) {
-        console.error('Registration error:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Login endpoint
+// Login endpoint (login.html)
 app.post('/api/login', async (req, res) => {
     try {
-        const { id_number, password } = req.body;
+        const { email, password } = req.body;
 
-        if (!id_number || !password) {
-            return res.status(400).json({ error: 'ID Number and password are required' });
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required' });
         }
 
-        const [users] = await pool.query('SELECT * FROM users WHERE id_number = ?', [id_number]);
+        const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
         if (users.length === 0) {
-            return res.status(401).json({ error: 'Invalid ID Number or password' });
+            return res.status(401).json({ error: 'Invalid email or password' });
         }
 
         const user = users[0];
-        console.log('User from DB:', user); // ✅ CORRECT place
-
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(401).json({ error: 'Invalid ID Number or password' });
+            return res.status(401).json({ error: 'Invalid email or password' });
         }
 
-        const token = jwt.sign({ id: user.id, id_number: user.id_number }, 'your_jwt_secret', { expiresIn: '1h' });
+        const token = jwt.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
 
         res.json({
             message: 'Login successful',
             token,
             user: {
                 id: user.id,
-                id_number: user.id_number,
                 email: user.email,
                 created_at: user.created_at,
-                user_level: user.user_level
+                user_level: user.user_level,
+                program_id: user.program_id,
+                enrollment_status: user.enrollment_status
             }
         });
 
@@ -122,7 +77,69 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// Fetch courses endpoint
+
+// Fetch offered courses for a specific program (courses_curriculum.html)
+app.get('/api/courses/offered/:programId', async (req, res) => {
+    const programId = req.params.programId;
+    try {
+        const [courses] = await pool.query(`
+            SELECT 
+                c.course_id,
+                c.course_code,
+                c.course_description,
+                c.units
+            FROM courses c
+            WHERE c.program_id = ? AND c.offered = 'offered'
+        `, [programId]);
+        res.json(courses);
+    } catch (err) {
+        console.error('Error fetching offered courses:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Registration endpoint (registration.html)
+app.post('/api/register', async (req, res) => {
+    try {
+        const { full_name, email, password } = req.body;
+
+        if (!full_name || !email || !password) {
+            return res.status(400).json({ error: 'All fields are required' });
+        }
+
+        // Check if email already exists
+        const [existingUsers] = await pool.query(
+            'SELECT * FROM users WHERE email = ?',
+            [email]
+        );
+
+        if (existingUsers.length > 0) {
+            return res.status(400).json({ error: 'Email already registered' });
+        }
+
+        // Hash password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Insert user
+        const [result] = await pool.query(
+            'INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)',
+            [full_name, email, hashedPassword]
+        );
+
+        res.status(201).json({
+            message: 'User registered successfully',
+            userId: result.insertId
+        });
+
+    } catch (error) {
+        console.error('Registration error:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+// Fetch courses endpoint(courses_offered.html)
 app.get('/api/courses', async (req, res) => {
     try {
         const [rows] = await pool.query(`
@@ -159,7 +176,7 @@ app.get('/api/courses', async (req, res) => {
     }
 });
 
-// Get all programs (for dropdown)
+// Get all programs (for dropdown) (courses_curriculum.html)
 app.get('/api/programs', async (req, res) => {
     try {
         const [programs] = await pool.query('SELECT program_id, program_name FROM programs ORDER BY program_name');
@@ -170,123 +187,7 @@ app.get('/api/programs', async (req, res) => {
     }
 });
 
-
-// Fetch programs endpoint
-app.get('/api/student-courses', async (req, res) => {
-    const studentId = req.query.studentId;
-
-    try {
-        const [[user]] = await pool.query(
-            'SELECT program_id FROM users WHERE id = ?',
-            [studentId]
-        );
-
-        if (!user || !user.program_id) {
-            return res.status(400).json({ error: 'Student or program not found' });
-        }
-
-        const programId = user.program_id;
-
-        const [rows] = await pool.query(`
-            SELECT 
-                c.course_id,
-                c.course_code,
-                c.course_description,
-                c.units,
-                c.offered,
-                e.status,
-                e.rating,
-                e.semester
-            FROM courses c
-            LEFT JOIN student_courses e
-                ON c.course_id = e.course_id AND e.student_id = ?
-            WHERE c.program_id = ?
-        `, [studentId, programId]);
-
-        const formatted = rows.map(c => ({
-            ...c,
-            status: c.status || null,
-            rating: c.rating || '',
-            semester: c.semester || ''
-        }));
-
-        res.json(formatted);
-    } catch (error) {
-        console.error('Error in /api/student-courses:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-
-
-app.post('/api/admin/enroll-student', async (req, res) => {
-    const { id_number, email, password, program_id, course_ids = [] } = req.body;
-
-    if (!id_number || !email || !password || !program_id) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-
-    try {
-        const [existing] = await pool.query(
-            'SELECT * FROM users WHERE email = ? OR id_number = ?',
-            [email, id_number]
-        );
-        if (existing.length > 0) {
-            return res.status(400).json({ error: 'Student already exists' });
-        }
-
-        const hashed = await bcrypt.hash(password, 10);
-
-        // Insert user
-        const [userResult] = await pool.query(
-            'INSERT INTO users (id_number, email, password, program_id, user_level) VALUES (?, ?, ?, ?, ?)',
-            [id_number, email, hashed, program_id, 'student']
-        );
-
-        const userId = userResult.insertId;
-
-        // Insert into student_courses
-        const courseInserts = course_ids.map(course_id => [
-            userId,
-            course_id,
-            'enrolled',
-            null,
-            null
-        ]);
-
-        if (courseInserts.length > 0) {
-            await pool.query(
-                'INSERT INTO student_courses (student_id, course_id, status, rating, semester) VALUES ?',
-                [courseInserts]
-            );
-        }
-
-        res.status(201).json({ message: 'Student and courses enrolled successfully', studentId: userId });
-
-    } catch (err) {
-        console.error('Enroll student error:', err);
-        res.status(500).json({ error: 'Failed to enroll student' });
-    }
-});
-
-
-
-app.get('/api/courses/offered/:programId', async (req, res) => {
-    const programId = req.params.programId;
-    try {
-        const [courses] = await pool.query(`
-            SELECT course_id, course_code, course_description
-            FROM courses
-            WHERE program_id = ? AND offered = 'offered'
-        `, [programId]);
-        res.json(courses);
-    } catch (err) {
-        console.error('Error fetching program courses:', err);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Chatbot response endpoint
+// Chatbot response endpoint (chatbot.html)
 app.get('/api/chatbot', async (req, res) => {
     const query = (req.query.q || '').toLowerCase().trim();
 
@@ -310,7 +211,7 @@ app.get('/api/chatbot', async (req, res) => {
 });
 
 
-// Add chatbot response
+// Add chatbot response (admin.html)
 app.post('/api/chatbot/add', async (req, res) => {
     const { keyword, response } = req.body;
     try {
@@ -325,7 +226,7 @@ app.post('/api/chatbot/add', async (req, res) => {
     }
 });
 
-// Get all responses
+// Get all responses (admin.html)
 app.get('/api/chatbot/all', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM chatbot_responses ORDER BY id DESC');
@@ -336,7 +237,7 @@ app.get('/api/chatbot/all', async (req, res) => {
     }
 });
 
-// Toggle active status
+// Toggle active status (admin.html)
 app.patch('/api/chatbot/toggle/:id', async (req, res) => {
     try {
         await pool.query('UPDATE chatbot_responses SET is_active = NOT is_active WHERE id = ?', [req.params.id]);
@@ -347,7 +248,7 @@ app.patch('/api/chatbot/toggle/:id', async (req, res) => {
     }
 });
 
-// Delete response
+// Delete response (admin.html)
 app.delete('/api/chatbot/delete/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM chatbot_responses WHERE id = ?', [req.params.id]);
@@ -358,7 +259,7 @@ app.delete('/api/chatbot/delete/:id', async (req, res) => {
     }
 });
 
-// Get all students
+// Get all students (students.html)
 app.get('/api/students', async (req, res) => {
     try {
         const [students] = await pool.query(`
@@ -375,31 +276,96 @@ app.get('/api/students', async (req, res) => {
     }
 });
 
-// Get a single student's full info
-app.get('/api/students/:id', async (req, res) => {
-    const studentId = req.params.id;
+// Student enrollment with metadata (enrollment.html)
+app.post('/api/student-courses/enroll', async (req, res) => {
+    const {
+        student_name,
+        student_id,
+        student_email,
+        student_id_number,
+        program_id,
+        course_ids,
+        term,
+        student_category,
+        academic_year,
+        address
+    } = req.body;
+
+    if (!student_id || !course_ids?.length || !term || !student_category || !academic_year) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
     try {
-        const [[user]] = await pool.query(`
-            SELECT u.id, u.id_number, u.email, u.created_at, p.program_name
-            FROM users u
-            LEFT JOIN programs p ON u.program_id = p.program_id
-            WHERE u.id = ?
-        `, [studentId]);
+        const connection = await pool.getConnection();
 
-        const [courses] = await pool.query(`
-            SELECT c.course_code, c.course_description, sc.status, sc.rating, sc.semester
-            FROM student_courses sc
-            JOIN courses c ON sc.course_id = c.course_id
-            WHERE sc.student_id = ?
-        `, [studentId]);
+        const insertPromises = course_ids.map(course_id =>
+            connection.query(
+                `INSERT INTO enrollments 
+                    (student_id, course_id, term, student_category, academic_year, address,
+                    student_name, student_email, student_id_number, program_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    student_id, course_id, term, student_category, academic_year, address,
+                    student_name, student_email, student_id_number, program_id
+                ]
 
-        res.json({ user, courses });
+            )
+        );
+
+        await Promise.all(insertPromises);
+        connection.release();
+
+        res.json({ message: 'Enrollment submitted successfully' });
     } catch (err) {
-        console.error('Error fetching student detail:', err);
-        res.status(500).json({ error: 'Failed to fetch student' });
+        console.error('Enrollment submission error:', err);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
+// Delete student courses by ID number (enrollment.html)
+app.delete('/api/student-courses/delete/:student_id', async (req, res) => {
+    const { student_id } = req.params;
+
+    try {
+        const [result] = await pool.query(
+            'DELETE FROM enrollments WHERE student_id = ?',
+            [student_id]
+        );
+
+        res.json({ message: 'Enrollment deleted successfully.' });
+    } catch (err) {
+        console.error('Delete error:', err);
+        res.status(500).json({ error: 'Failed to delete enrollment.' });
+    }
+});
+
+// Check if a user is enrolled in any courses (enrollment.html)
+app.get('/api/enrollment/:userId', async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const [enrollments] = await pool.query(
+            `SELECT 
+                e.*, 
+                c.course_code, 
+                c.course_description, 
+                c.units
+             FROM enrollments e
+             JOIN courses c ON e.course_id = c.course_id
+             WHERE e.student_id = ?`,
+            [userId]
+        );
+
+        if (enrollments.length === 0) {
+            return res.json({ enrolled: false });
+        }
+
+        res.json({ enrolled: true, data: enrollments });
+    } catch (err) {
+        console.error('Fetch enrollment error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
 
 // Start server
 app.listen(PORT, async () => {

@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<!-- TODO: There is a courses table in database. Apply the courses the database and page. Use the UC portal as basis. -->
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CGS Portal Login</title>
-    <!-- Load React and Babel -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .gradient-bg {
@@ -33,7 +29,7 @@
 
         function LoginForm() {
             const [formData, setFormData] = useState({
-                id_number: '',
+                email: '',
                 password: ''
             });
             const [errors, setErrors] = useState({});
@@ -56,18 +52,15 @@
                     if (response.ok) {
                         localStorage.setItem('authToken', data.token);
                         localStorage.setItem('user', JSON.stringify(data.user));
-                        
 
-                        // 🔁 Redirect based on user level
                         if (data.user.user_level === 'admin') {
                             window.location.href = 'admin.html';
                         } else {
                             window.location.href = 'home.html';
                         }
-                        console.log('Logged-in user level:', data.user.user_level);
+                    } else {
+                        setErrors({ submit: data.error });
                     }
-                    
-
                 } catch (error) {
                     setErrors({ submit: 'Network error. Please try again.' });
                 } finally {
@@ -78,17 +71,6 @@
             const redirectToRegister = () => {
                 window.location.href = 'registration.html';
             };
-
-            const handleDropdownChange = (e) => {
-                const selectedValue = e.target.value;
-                if (selectedValue === "coursesOffered") {
-                    window.location.href = 'courses_offered.html'; // Replace with your actual page
-                } else if (selectedValue === "coursesCurriculum") {
-                    window.location.href = 'courses_curriculum.html'; // Replace with your actual page
-                }
-            };
-
-            
 
             return (
                 <div className="bg-white rounded-lg p-8 max-w-md w-full form-container">
@@ -105,12 +87,12 @@
                         )}
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">ID Number</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                             <input
-                                type="text"
+                                type="email"
                                 className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                                value={formData.id_number}
-                                onChange={(e) => setFormData({ ...formData, id_number: e.target.value })}
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 required
                             />
                         </div>
@@ -124,9 +106,6 @@
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 required
                             />
-                            <a href="#" className="text-sm text-indigo-600 hover:underline mt-1 inline-block">
-                                Forgot password?
-                            </a>
                         </div>
 
                         <button
@@ -146,18 +125,6 @@
                         >
                             Register
                         </button>
-                    </div>
-
-                    <div className="mt-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Admission</label>
-                        <select
-                            onChange={handleDropdownChange}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="">Select an option</option>
-                            <option value="coursesOffered">Courses Offered</option>
-                            <option value="coursesCurriculum">Courses Curriculum</option>
-                        </select>
                     </div>
                 </div>
             );
