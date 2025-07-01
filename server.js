@@ -13,13 +13,22 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(bodyParser.json());
 
-// Database configuration
+// // Database configuration
+// const dbConfig = {
+//     host: 'localhost',
+//     user: 'root',
+//     password: '',
+//     database: 'cgs'
+// };
+
+
 const dbConfig = {
-    host: 'localhost',
-    user: 'root',
-    password: '',
-    database: 'cgs'
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME
 };
+
 
 // Create MySQL connection pool
 const pool = mysql.createPool(dbConfig);
