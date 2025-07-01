@@ -1,3 +1,5 @@
+const path = require('path');
+
 // server.js - CGS Registration Backend
 const express = require('express');
 const mysql = require('mysql2/promise');
@@ -376,6 +378,15 @@ app.get('/api/enrollment/:userId', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+// Serve static files from React frontend
+app.use(express.static(path.join(__dirname, '../client/build')));
+
+// Catch-all route for React (for deep linking and routing)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+});
+
 
 // Start server
 app.listen(PORT, async () => {
