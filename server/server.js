@@ -9,7 +9,10 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken'); // Import JWT for token generation
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT;
+
+
+// const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
@@ -385,7 +388,6 @@ app.use(express.static(path.join(__dirname, '../client')));
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/login.html'));
 });
-
 
 
 // Start server
