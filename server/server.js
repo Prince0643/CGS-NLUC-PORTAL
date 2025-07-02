@@ -382,12 +382,12 @@ app.get('/api/enrollment/:userId', async (req, res) => {
     }
 });
 
-// ✅ Correct for your actual folder
-app.use(express.static(path.join(__dirname, '../client')));
+// // ✅ Correct for your actual folder
+// app.use(express.static(path.join(__dirname, '../client')));
 
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/login.html'));
-});
+// app.get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, '../client/login.html'));
+// });
 
 
 // Start server
