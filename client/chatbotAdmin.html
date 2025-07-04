@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chatbot Admin | CGS Portal</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function ChatbotAdmin() {
+            const [responses, setResponses] = useState([]);
+            const [newKeyword, setNewKeyword] = useState('');
+            const [newResponse, setNewResponse] = useState('');
+            const [user, setUser] = useState(null);
+
+            useEffect(() => {
+                const storedUser = localStorage.getItem('user');
+                if (storedUser) {
+                    const parsed = JSON.parse(storedUser);
+                    if (parsed.user_level !== 'admin') {
+                        window.location.href = 'home.html';
+                        return;
+                    }
+                    setUser(parsed);
+                } else {
+                    window.location.href = 'index.html';
+                }
+            }, []);
+
+            const fetchResponses = async () => {
+                const res = await fetch('http://localhost:5000/api/chatbot/all');
+                const data = await res.json();
+                setResponses(data);
+            };
+
+            useEffect(() => {
+                fetchResponses();
+            }, []);
+
+            const handleAdd = async (e) => {
+                e.preventDefault();
+                if (!newKeyword || !newResponse) return;
+
+                await fetch('http://localhost:5000/api/chatbot/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyword: newKeyword.trim().toLowerCase(), response: newResponse.trim() })
+                });
+                setNewKeyword('');
+                setNewResponse('');
+                fetchResponses();
+            };
+
+            const toggleStatus = async (id) => {
+                await fetch(`http://localhost:5000/api/chatbot/toggle/${id}`, { method: 'PATCH' });
+                fetchResponses();
+            };
+
+            const deleteResponse = async (id) => {
+                await fetch(`http://localhost:5000/api/chatbot/delete/${id}`, { method: 'DELETE' });
+                fetchResponses();
+            };
+
+            const handleLogout = () => {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('user');
+                window.location.href = 'index.html';
+            };
+
+            return (
+                <div className="flex min-h-screen">
+                    {/* Sidebar */}
+                    <div className="w-64 bg-indigo-800 text-white flex flex-col">
+                        <div className="p-5 text-2xl font-bold border-b border-indigo-600">
+                            Chatbot Admin
+                        </div>
+                        <ul className="flex-1 mt-4 space-y-1 px-4">
+                            <li><a href="admin.html" className="block py-2 px-3 rounded hover:bg-indigo-700">← Back to Admin</a></li>
+                            <li><a href="chatbotAdmin.html" className="block py-2 px-3 rounded bg-indigo-700">Manage Chatbot</a></li>
+                        </ul>
+                        <div className="p-4 border-t border-indigo-700 text-sm">
+                            Logged in as: <span className="font-semibold">{user?.email}</span>
+                        </div>
+                    </div>
+
+                    {/* Main Content */}
+                    <div className="flex-1 bg-gray-100 p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-2xl font-bold text-gray-800">Chatbot Management</h1>
+                            <button
+                                onClick={handleLogout}
+                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                            >
+                                Logout
+                            </button>
+                        </div>
+
+                        {/* Add New Response */}
+                        <form onSubmit={handleAdd} className="flex flex-col md:flex-row gap-2 mb-6">
+                            <input
+                                type="text"
+                                placeholder="Keyword (e.g. tuition)"
+                                className="border px-3 py-2 rounded w-full"
+                                value={newKeyword}
+                                onChange={(e) => setNewKeyword(e.target.value)}
+                            />
+                            <input
+                                type="text"
+                                placeholder="Response"
+                                className="border px-3 py-2 rounded w-full"
+                                value={newResponse}
+                                onChange={(e) => setNewResponse(e.target.value)}
+                            />
+                            <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                                Add
+                            </button>
+                        </form>
+
+                        {/* Chatbot Responses Table */}
+                        <div className="overflow-x-auto bg-white shadow rounded-lg">
+                            <table className="min-w-full table-auto border">
+                                <thead className="bg-gray-100">
+                                    <tr>
+                                        <th className="px-4 py-2 border">Keyword</th>
+                                        <th className="px-4 py-2 border">Response</th>
+                                        <th className="px-4 py-2 border">Status</th>
+                                        <th className="px-4 py-2 border">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {responses.map((item, idx) => (
+                                        <tr key={idx} className="text-sm">
+                                            <td className="px-4 py-2 border">{item.keyword}</td>
+                                            <td className="px-4 py-2 border">{item.response}</td>
+                                            <td className="px-4 py-2 border">{item.is_active ? 'Active' : 'Inactive'}</td>
+                                            <td className="px-4 py-2 border space-x-2">
+                                                <button
+                                                    onClick={() => toggleStatus(item.id)}
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    {item.is_active ? 'Deactivate' : 'Activate'}
+                                                </button>
+                                                <button
+                                                    onClick={() => deleteResponse(item.id)}
+                                                    className="text-red-600 hover:underline"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ChatbotAdmin />);
+    </script>
+</body>
+
+</html>

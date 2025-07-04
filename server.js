@@ -9,31 +9,31 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken'); // Import JWT for token generation
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+// const PORT = process.env.PORT || 8080;
 
 
-// const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// // Database configuration
-// const dbConfig = {
-//     host: 'localhost',
-//     user: 'root',
-//     password: '',
-//     database: 'cgs'
-// };
-
-
+// Database configuration
 const dbConfig = {
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    ssl: { rejectUnauthorized: true }
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'cgs'
 };
+
+
+// const dbConfig = {
+//     host: process.env.DB_HOST,
+//     user: process.env.DB_USER,
+//     password: process.env.DB_PASSWORD,
+//     database: process.env.DB_NAME,
+//     ssl: { rejectUnauthorized: true }
+// };
 
 
 // Create MySQL connection pool
@@ -51,7 +51,7 @@ async function testConnection() {
     }
 }
 
-// Login endpoint (login.html)
+// Login endpoint (index.html)
 app.post('/api/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -310,49 +310,114 @@ app.post('/api/student-courses/enroll', async (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    const connection = await pool.getConnection();
     try {
-        const connection = await pool.getConnection();
+        await connection.beginTransaction();
 
         const insertPromises = course_ids.map(course_id =>
             connection.query(
                 `INSERT INTO enrollments 
-                    (student_id, course_id, term, student_category, academic_year, address,
-                    student_name, student_email, student_id_number, program_id)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (student_id, course_id, term, student_category, academic_year, address,
+                student_name, student_email, student_id_number, program_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     student_id, course_id, term, student_category, academic_year, address,
                     student_name, student_email, student_id_number, program_id
                 ]
-
             )
         );
-
         await Promise.all(insertPromises);
-        connection.release();
 
-        res.json({ message: 'Enrollment submitted successfully' });
+        // Calculate total units
+        const [courses] = await connection.query(
+            `SELECT units FROM courses WHERE course_id IN (${course_ids.map(() => '?').join(',')})`,
+            course_ids
+        );
+        const totalUnits = courses.reduce((sum, course) => sum + course.units, 0);
+
+        // Determine tuition per unit
+        const [[{ program_level }]] = await connection.query(
+            'SELECT program_level FROM programs WHERE program_id = ?',
+            [program_id]
+        );
+        const perUnit = program_level === 'Doctorate' ? 500 : 400;
+        const tuition = totalUnits * perUnit;
+
+        const isNew = student_category.toLowerCase() === 'new';
+        const misc =
+            (isNew ? 100 : 0) + // Entrance
+            150 +               // ILS
+            500 +               // Energy
+            150 +               // Registration
+            150 +               // Athletic
+            100 +               // Cultural
+            200 +               // Library
+            (isNew ? 100 : 0) + // School ID
+            200 +               // Internet
+            200 +               // Laboratory
+            1275 +              // Development
+            150 +               // Medical
+            100;                // Guidance
+
+        const total = tuition + misc;
+
+        await connection.query(
+            `INSERT INTO enrollment_fees 
+            (student_id, total_units, tuition_fee, misc_fee, total_fee)
+            VALUES (?, ?, ?, ?, ?)`,
+            [student_id, totalUnits, tuition, misc, total]
+        );
+
+        await connection.commit();
+        res.json({ message: 'Enrollment and fee calculated successfully.' });
     } catch (err) {
-        console.error('Enrollment submission error:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        await connection.rollback();
+        console.error(err);
+        res.status(500).json({ error: 'Enrollment failed' });
+    } finally {
+        connection.release();
     }
 });
+
+// (enrollment.html)
+app.get('/api/enrollment-fees/:studentId', async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const [rows] = await pool.query(
+            'SELECT * FROM enrollment_fees WHERE student_id = ?',
+            [studentId]
+        );
+        if (!rows.length) return res.status(404).json({ error: 'No fee record found' });
+        res.json(rows[0]);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch fee data' });
+    }
+});
+
 
 // Delete student courses by ID number (enrollment.html)
 app.delete('/api/student-courses/delete/:student_id', async (req, res) => {
     const { student_id } = req.params;
 
+    const connection = await pool.getConnection();
     try {
-        const [result] = await pool.query(
-            'DELETE FROM enrollments WHERE student_id = ?',
-            [student_id]
-        );
+        await connection.beginTransaction();
 
-        res.json({ message: 'Enrollment deleted successfully.' });
+        await connection.query('DELETE FROM enrollments WHERE student_id = ?', [student_id]);
+        await connection.query('DELETE FROM enrollment_fees WHERE student_id = ?', [student_id]);
+
+        await connection.commit();
+        res.json({ message: 'Enrollment and fees deleted successfully.' });
     } catch (err) {
+        await connection.rollback();
         console.error('Delete error:', err);
-        res.status(500).json({ error: 'Failed to delete enrollment.' });
+        res.status(500).json({ error: 'Failed to delete enrollment and fees.' });
+    } finally {
+        connection.release();
     }
 });
+
 
 // Check if a user is enrolled in any courses (enrollment.html)
 app.get('/api/enrollment/:userId', async (req, res) => {
@@ -381,6 +446,44 @@ app.get('/api/enrollment/:userId', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+// Get programs filtered by program level (used only in enrollment.html)
+app.get('/api/programs/by-level', async (req, res) => {
+    try {
+        const { level } = req.query;
+        if (!level) {
+            return res.status(400).json({ error: 'Program level is required' });
+        }
+
+        const [programs] = await pool.query(
+            'SELECT program_id, program_name, program_level FROM programs WHERE program_level = ? ORDER BY program_name',
+            [level]
+        );
+
+        res.json(programs);
+    } catch (error) {
+        console.error('Error fetching programs by level:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// (enrollment.html)
+app.get('/api/program-details/:programId', async (req, res) => {
+    const { programId } = req.params;
+    try {
+        const [rows] = await pool.query(
+            'SELECT program_name, program_level FROM programs WHERE program_id = ?',
+            [programId]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'Program not found' });
+        res.json(rows);
+    } catch (err) {
+        console.error('Program details fetch error:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
 
 // // ✅ Correct for your actual folder
 // app.use(express.static(path.join(__dirname, '../client')));

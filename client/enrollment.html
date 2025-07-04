@@ -9,6 +9,24 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+
+            html,
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+        }
+
+        /* PDF rendering fix */
+        .pdf-container {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            max-width: none !important;
+        }
+    </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 
@@ -44,17 +62,63 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
+        function computeFees(formData, selectedCourses) {
+            const unitRate = formData.program_level === 'Doctorate' ? 500 : 400;
+            const totalUnits = selectedCourses.reduce((sum, course) => sum + (course.units || 0), 0);
+            const tuition_fee = totalUnits * unitRate;
+
+            const fixed_fees = {
+                entrance: formData.student_category === 'New' ? 100 : 0,
+                ils: 150,
+                energy: 500,
+                registration: 150,
+                athletic: 150,
+                cultural: 100,
+                library: 200,
+                school_id: formData.student_category === 'New' ? 100 : 0,
+                internet: 200,
+                laboratory: 200,
+                development: 1275,
+                medical_dental: 150,
+                guidance: 100
+            };
+
+            const total_fee = tuition_fee + Object.values(fixed_fees).reduce((a, b) => a + b, 0);
+
+            return {
+                ...fixed_fees,
+                tuition_fee,
+                total_fee
+            };
+        }
+
         function EnrollmentForm() {
             const pdfRef = React.useRef();
 
             const handlePrintPDF = () => {
                 if (!pdfRef.current) return;
-                html2pdf().from(pdfRef.current).set({
-                    margin: 0.5,
+
+                const element = pdfRef.current;
+
+                const width = 800; // fixed width for consistent rendering
+                const scale = 1.4;
+
+                html2pdf().set({
+                    margin: [10, 10, 10, 10], // small margin all sides
                     filename: `Enrollment-${formData.id_number}.pdf`,
-                    html2canvas: { scale: 2 },
-                    jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                }).save();
+                    image: { type: 'jpeg', quality: 1 },
+                    html2canvas: {
+                        scale: 1.5,
+                        useCORS: true,
+                        scrollY: 0
+                    },
+                    jsPDF: {
+                        unit: 'mm',
+                        format: 'Legal',
+                        orientation: 'portrait'
+                    },
+                    pagebreak: { mode: ['avoid-all'] }
+                }).from(element).save();
             };
 
             const [formData, setFormData] = useState({
@@ -62,11 +126,13 @@
                 address: '',
                 email: '',
                 id_number: '',
+                program_level: '', // ← new field
                 program_id: '',
                 academic_year: '2025-2026',
                 term: '1st Sem',
                 student_category: 'New'
             });
+
 
             const [programs, setPrograms] = useState([]);
             const [courses, setCourses] = useState([]);
@@ -74,6 +140,7 @@
             const [message, setMessage] = useState('');
             const [submittedData, setSubmittedData] = useState(null);
             const [editMode, setEditMode] = useState(false);
+            const [submittedFees, setSubmittedFees] = useState(null);
 
             useEffect(() => {
                 fetch('http://localhost:5000/api/programs')
@@ -95,6 +162,9 @@
                             const courseData = await courseRes.json();
                             setCourses(courseData);
 
+                            const programRes = await fetch(`http://localhost:5000/api/program-details/${enrollment.program_id}`);
+                            const [programDetails] = await programRes.json();
+
                             const selectedIds = data.data.map(e => e.course_id);
                             const selectedCourses = selectedIds
                                 .map(id => courseData.find(c => c.course_id === id))
@@ -108,12 +178,17 @@
                                 program_id: enrollment.program_id || '',
                                 academic_year: enrollment.academic_year || '',
                                 term: enrollment.term || '',
-                                student_category: enrollment.student_category || ''
+                                student_category: enrollment.student_category || '',
+                                program_name: programDetails.program_name || '',
+                                program_level: programDetails.program_level || ''
                             };
+
 
                             setFormData(updatedForm);
                             setSelected(selectedIds);
                             setSubmittedData({ formData: updatedForm, selectedIds, selectedCourses });
+                            const computed = computeFees(updatedForm, selectedCourses);
+                            setSubmittedFees(computed);
                         }
                     })
                     .catch(err => console.error('Enrollment fetch error:', err));
@@ -136,6 +211,11 @@
                 } catch (err) {
                     console.error('Error loading courses:', err);
                 }
+            };
+
+            const handleLevelSelect = e => {
+                const level = e.target.value;
+                setFormData(prev => ({ ...prev, program_level: level }));
             };
 
             const handleToggle = courseId => {
@@ -189,6 +269,12 @@
                     const selectedCourses = selected.map(id => courses.find(c => c.course_id === id)).filter(Boolean);
                     const savedData = { formData, selectedIds: selected, selectedCourses };
                     setSubmittedData(savedData);
+
+                    // ✅ fetch fee details after successful enrollment
+                    const feeRes = await fetch(`http://localhost:5000/api/enrollment-fees/${student_id}`);
+                    const feeData = await feeRes.json();
+                    setSubmittedFees(feeData);
+
                     setEditMode(false);
                 } catch (err) {
                     console.error(err);
@@ -239,11 +325,11 @@
 
                     {!submittedData || editMode ? (
                         <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block mb-1">Full Name</label>
+                                <input type="text" name="name" value={formData.name} onChange={handleInput} className="border p-2 rounded w-full" required />
+                            </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block mb-1">Full Name</label>
-                                    <input type="text" name="name" value={formData.name} onChange={handleInput} className="border p-2 rounded w-full" required />
-                                </div>
                                 <div>
                                     <label className="block mb-1">Address</label>
                                     <input type="text" name="address" value={formData.address} onChange={handleInput} className="border p-2 rounded w-full" />
@@ -255,6 +341,20 @@
                                 <div>
                                     <label className="block mb-1">ID Number</label>
                                     <input type="text" name="id_number" value={formData.id_number} onChange={handleInput} className="border p-2 rounded w-full" required />
+                                </div>
+                                <div>
+                                    <label className="block mb-1">Program Level</label>
+                                    <select
+                                        name="program_level"
+                                        value={formData.program_level}
+                                        onChange={handleLevelSelect}
+                                        className="border p-2 rounded w-full"
+                                        required
+                                    >
+                                        <option value="">Select Level</option>
+                                        <option value="Masteral">Masteral</option>
+                                        <option value="Doctorate">Doctorate</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block mb-1">Program</label>
@@ -315,22 +415,101 @@
                         </form>
                     ) : (
                         <div>
-                            <div ref={pdfRef} className="border p-4 bg-gray-50 rounded mb-4">
-                                <h2 className="text-lg font-semibold mb-2">Enrollment Confirmation</h2>
-                                <p><strong>Name:</strong> {submittedData.formData.name}</p>
-                                <p><strong>Email:</strong> {submittedData.formData.email}</p>
-                                <p><strong>Address:</strong> {submittedData.formData.address}</p>
-                                <p><strong>ID Number:</strong> {submittedData.formData.id_number}</p>
-                                <p><strong>Academic Year:</strong> {submittedData.formData.academic_year}</p>
-                                <p><strong>Term:</strong> {submittedData.formData.term}</p>
-                                <p><strong>Student Category:</strong> {submittedData.formData.student_category}</p>
-                                <p><strong>Courses Selected:</strong></p>
-                                <ul className="list-disc list-inside">
-                                    {submittedData.selectedCourses.map((course, i) => (
-                                        <li key={i}>{course.course_code} - {course.course_description}</li>
-                                    ))}
-                                </ul>
+                            <div
+                                ref={pdfRef}
+                                className="pdf-container bg-white text-black text-sm mx-auto"
+                            >
+                                <h2 className="text-lg font-bold text-center uppercase mb-2">Registration Confirmation</h2>
+
+                                <br></br>
+
+                                <div className="grid grid-cols-3 gap-4 border-b pb-2 mb-2">
+                                    <div><strong>STUDENT CATEGORY:</strong> {formData.student_category}</div>
+                                    <div><strong>SCHOOL YEAR:</strong> {formData.academic_year}</div>
+                                    <div><strong>TERM:</strong> {formData.term}</div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 mb-2">
+                                    <div><strong>NAME:</strong> {formData.name}</div>
+                                    <div><strong>PROGRAM:</strong> {programs.find(p => p.program_id === formData.program_id)?.program_name || 'N/A'}</div>
+                                    <div><strong>ADDRESS:</strong> {formData.address}</div>
+                                    <div><strong>ID NUMBER:</strong> {formData.id_number}</div>
+                                    <div><strong>EMAIL:</strong> {formData.email}</div>
+                                    <div><strong>PROGRAM LEVEL:</strong> {formData.program_level}</div>
+                                </div>
+
+                                <br></br>
+
+                                <div className="mb-4">
+                                    <h3 className="font-bold text-center underline mb-1">COURSES</h3>
+                                    <table className="w-full border border-gray-300 text-sm">
+                                        <thead>
+                                            <tr className="bg-gray-200">
+                                                <th className="p-2 border">COURSE NUMBER</th>
+                                                <th className="p-2 border">DESCRIPTIVE TITLE</th>
+                                                <th className="p-2 border">UNITS</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {submittedData.selectedCourses.map((course, i) => (
+                                                <tr key={i}>
+                                                    <td className="p-2 border">{course.course_code}</td>
+                                                    <td className="p-2 border">{course.course_description}</td>
+                                                    <td className="p-2 border text-center">{course.units}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <br></br>
+
+                                {submittedFees && (
+                                    <div className="mb-4">
+                                        <h3 className="font-bold text-center underline mb-2">CASHIER ASSESSMENT</h3>
+                                        <table className="w-full border text-sm">
+                                            <tbody>
+                                                {Object.entries({
+                                                    Entrance: formData.student_category === 'New' ? 100 : 0,
+                                                    ILS: 150,
+                                                    Energy: 500,
+                                                    Registration: 150,
+                                                    Tuition: submittedFees.tuition_fee,
+                                                    Athletic: 150,
+                                                    Cultural: 100,
+                                                    Library: 200,
+                                                    "School ID": formData.student_category === 'New' ? 100 : 0,
+                                                    Internet: 200,
+                                                    Laboratory: 200,
+                                                    Development: 1275,
+                                                    "Medical/Dental": 150,
+                                                    Guidance: 100
+                                                }).map(([label, amount], i) => (
+                                                    <tr key={i}>
+                                                        <td className="p-2 border">{label}</td>
+                                                        <td className="p-2 border text-right">{amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                                    </tr>
+                                                ))}
+                                                <tr className="font-bold bg-gray-100">
+                                                    <td className="p-2 border">TOTAL</td>
+                                                    <td className="p-2 border text-right text-green-700">{submittedFees.total_fee.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+
+                                )}
+
+                                <p className="text-xs text-gray-600 italic mt-2 text-center">
+                                    NOTE: This is only the expected fee of your enrollment. For the exact amount, you may ask the cashier.
+                                </p>
                             </div>
+
+
+
+                            <br></br>
+
                             <div className="flex gap-2">
                                 <button onClick={handlePrintPDF} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
                                     Download PDF

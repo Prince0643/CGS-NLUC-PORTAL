@@ -35,7 +35,7 @@
                     setUser(parsedUser);
                     setIsLoading(false);
                 } else {
-                    window.location.href = 'login.html';
+                    window.location.href = 'index.html';
                 }
             }, []);
 
@@ -62,7 +62,7 @@
             const handleLogout = () => {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('user');
-                window.location.href = 'login.html';
+                window.location.href = 'index.html';
             };
 
             if (isLoading) {
@@ -84,7 +84,7 @@
                             <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Dashboard</a></li>
                             <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Programs</a></li>
                             <li><a href="students.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Students</a></li>
-                            <li><a href="#chatbot" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Chatbot</a></li>
+                            <li><a href="chatbotAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Chatbot</a></li>
                             <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Forms</a></li>
                             <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Settings</a></li>
                         </ul>

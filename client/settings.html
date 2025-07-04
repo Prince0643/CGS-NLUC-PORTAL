@@ -15,9 +15,12 @@
             <div class="p-5 text-2xl font-bold border-b border-indigo-500">CGS Portal</div>
             <ul class="flex-1 mt-4 space-y-1 px-4">
                 <li><a href="home.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Home</a></li>
-                <li><a href="enrollment.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Enrollment</a></li>
-                <li><a href="checklist.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Checklist</a></li>
-                <li><a href="citizens-charter.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Citizens
+                <li><a href="enrollment.html"
+                        class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Enrollment</a></li>
+                <li><a href="checklist.html"
+                        class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Checklist</a></li>
+                <li><a href="citizens-charter.html"
+                        class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Citizens
                         Charter</a></li>
                 <li><a href="chatbot.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Chatbot</a>
                 </li>
@@ -40,19 +43,20 @@
                     <form>
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700">Email</label>
-                            <input type="email" class="w-full mt-1 px-4 py-2 border rounded-md" placeholder="your@email.com"
-                                value="${user?.email || ''}">
+                            <input type="email" class="w-full mt-1 px-4 py-2 border rounded-md"
+                                placeholder="your@email.com" value="${user?.email || ''}">
                         </div>
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700">ID Number</label>
-                            <input type="text" class="w-full mt-1 px-4 py-2 border rounded-md bg-gray-100 cursor-not-allowed"
+                            <input type="text"
+                                class="w-full mt-1 px-4 py-2 border rounded-md bg-gray-100 cursor-not-allowed"
                                 value="${user?.id_number || ''}" readonly>
                         </div>
                         <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
                             Update
                         </button>
                     </form>
-                </section>  
+                </section>
 
                 <hr class="my-8" />
 
@@ -88,7 +92,6 @@
         document.querySelector('input[type="email"]').value = user?.email || '';
         document.querySelector('input[readonly]').value = user?.id_number || '';
     </script>
-      
 </body>
 
 </html>
