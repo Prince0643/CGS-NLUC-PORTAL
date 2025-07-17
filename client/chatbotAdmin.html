@@ -82,17 +82,20 @@
                     {/* Sidebar */}
                     <div className="w-64 bg-indigo-800 text-white flex flex-col">
                         <div className="p-5 text-2xl font-bold border-b border-indigo-600">
-                            Chatbot Admin
+                            CGS Admin Panel
                         </div>
                         <ul className="flex-1 mt-4 space-y-1 px-4">
-                            <li><a href="admin.html" className="block py-2 px-3 rounded hover:bg-indigo-700">← Back to Admin</a></li>
-                            <li><a href="chatbotAdmin.html" className="block py-2 px-3 rounded bg-indigo-700">Manage Chatbot</a></li>
+                            <li><a href="admin.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Dashboard</a></li>
+                            <li><a href="programs.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Programs</a></li>
+                            <li><a href="students.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Students</a></li>
+                            <li><a href="chatbotAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Chatbot</a></li>
+                            <li><a href="facultyAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Faculty</a></li>
+                            <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Settings</a></li>
                         </ul>
                         <div className="p-4 border-t border-indigo-700 text-sm">
                             Logged in as: <span className="font-semibold">{user?.email}</span>
                         </div>
                     </div>
-
                     {/* Main Content */}
                     <div className="flex-1 bg-gray-100 p-6">
                         <div className="flex justify-between items-center mb-6">

@@ -93,6 +93,51 @@
         }
 
         function EnrollmentForm() {
+            const [status, setStatus] = useState(null);
+            const [statusChecked, setStatusChecked] = useState(false);
+
+            useEffect(() => {
+                const loggedUser = JSON.parse(localStorage.getItem('user'));
+                if (!loggedUser) return;
+
+                fetch(`http://localhost:5000/api/students/${loggedUser.id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.status) {
+                            setStatus(data.status.toLowerCase());
+                        }
+                        setStatusChecked(true);
+                    })
+                    .catch(err => {
+                        console.error('Status fetch error:', err);
+                        setStatusChecked(true); // still allow fallback
+                    });
+            }, []);
+
+            if (!statusChecked) {
+                return <div className="text-center text-gray-500 mt-20">Checking enrollment status...</div>;
+            }
+
+            if (status === 'enrolled') {
+                return (
+                    <div className="flex items-center justify-center h-screen w-full bg-gray-100">
+                        <div className="bg-white shadow-lg p-10 rounded-lg text-center max-w-md">
+                            <h2 className="text-2xl font-bold text-green-600 mb-4">You're Officially Enrolled!</h2>
+                            <p className="mb-6 text-gray-600">Welcome aboard! You can now proceed to view your academic checklist.</p>
+                            <a href="checklist.html" className="inline-block bg-indigo-600 text-white px-6 py-3 rounded hover:bg-indigo-700 transition">Go to Checklist</a>
+                        </div>
+                    </div>
+                );
+            }
+
+            // 🟢 Render the full enrollment form and confirmation
+            return <FullEnrollmentForm />;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<EnrollmentForm />);
+
+        function FullEnrollmentForm() {
             const pdfRef = React.useRef();
 
             const handlePrintPDF = () => {
@@ -435,7 +480,6 @@
                                     <div><strong>ADDRESS:</strong> {formData.address}</div>
                                     <div><strong>ID NUMBER:</strong> {formData.id_number}</div>
                                     <div><strong>EMAIL:</strong> {formData.email}</div>
-                                    <div><strong>PROGRAM LEVEL:</strong> {formData.program_level}</div>
                                 </div>
 
                                 <br></br>
@@ -524,8 +568,8 @@
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<EnrollmentForm />);
+        const roottwo = ReactDOM.createRoot(document.getElementById('roottwo'));
+        roottwo.render(<FullEnrollmentForm />);
     </script>
 
     <!-- User Info Script -->

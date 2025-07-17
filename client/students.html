@@ -19,13 +19,11 @@
 
         function StudentManagement() {
             const [user, setUser] = useState(null);
-            const [isLoading, setIsLoading] = useState(true);
             const [students, setStudents] = useState([]);
             const [programs, setPrograms] = useState([]);
-            const [selectedProgramId, setSelectedProgramId] = useState('');
-            const [courses, setCourses] = useState([]);
             const [details, setDetails] = useState(null);
             const [showModal, setShowModal] = useState(false);
+            const [activeTab, setActiveTab] = useState('pending');
 
             useEffect(() => {
                 const storedUser = localStorage.getItem('user');
@@ -36,7 +34,6 @@
                         return;
                     }
                     setUser(parsedUser);
-                    setIsLoading(false);
                     fetchStudents();
                     fetchPrograms();
                 } else {
@@ -64,75 +61,35 @@
                 }
             };
 
-            const fetchCoursesForProgram = async (programId) => {
-                if (!programId) return;
-                try {
-                    const res = await fetch(`http://localhost:5000/api/courses/offered/${programId}`);
-                    const data = await res.json();
-                    setCourses(data);
-                } catch (err) {
-                    console.error('Course fetch error:', err);
-                }
-            };
-
             const viewStudent = async (id) => {
                 try {
                     const res = await fetch(`http://localhost:5000/api/students/${id}`);
                     const data = await res.json();
+                    console.log('Student status:', data.status);
                     setDetails(data);
+                    setShowModal(true);
                 } catch (err) {
                     console.error('View error:', err);
                 }
             };
 
-            const handleLogout = () => {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('user');
-                window.location.href = 'index.html';
+            const handleEnrollStatus = async (studentId) => {
+                try {
+                    const res = await fetch(`http://localhost:5000/api/students/${studentId}/status`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: 'enrolled' })
+                    });
+                    const result = await res.json();
+                    alert(result.message || result.error);
+                    setShowModal(false);
+                    fetchStudents();
+                } catch (err) {
+                    console.error('Status update error:', err);
+                }
             };
 
-            const handleProgramChange = (e) => {
-                const programId = e.target.value;
-                setSelectedProgramId(programId);
-                fetchCoursesForProgram(programId);
-            };
-
-            const handleEnroll = async (e) => {
-                e.preventDefault();
-                const formData = new FormData(e.target);
-                const course_ids = courses
-                    .filter(c => formData.get(`course_${c.course_id}`))
-                    .map(c => c.course_id);
-
-                const student = {
-                    id_number: formData.get('id_number'),
-                    email: formData.get('email'),
-                    password: formData.get('password'),
-                    program_id: selectedProgramId,
-                    course_ids
-                };
-
-                const res = await fetch('http://localhost:5000/api/admin/enroll-student', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(student)
-                });
-
-                const data = await res.json();
-                alert(data.message || data.error);
-                e.target.reset();
-                setCourses([]);
-                fetchStudents();
-                setShowModal(false);
-            };
-
-            if (isLoading) {
-                return (
-                    <div className="flex justify-center items-center h-screen">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-                    </div>
-                );
-            }
+            const filteredStudents = students.filter(s => s.status === activeTab);
 
             return (
                 <div className="flex min-h-screen">
@@ -142,9 +99,11 @@
                         </div>
                         <ul className="flex-1 mt-4 space-y-1 px-4">
                             <li><a href="admin.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Dashboard</a></li>
-                            <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Programs</a></li>
+                            <li><a href="programs.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Programs</a></li>
                             <li><a href="students.html" className="block py-2 px-3 rounded bg-indigo-700">Students</a></li>
-                            <li><a href="admin.html#chatbot" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Chatbot</a></li>
+                            <li><a href="chatbotAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Chatbot</a></li>
+                            <li><a href="facultyAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Faculty</a></li>
+                            <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Settings</a></li>
                         </ul>
                         <div className="p-4 border-t border-indigo-700 text-sm">
                             Logged in as: <span className="font-semibold">{user?.email}</span>
@@ -152,21 +111,89 @@
                     </div>
 
                     <div className="flex-1 bg-gray-100 p-6">
-                        {/* Students Table */}
                         <div className="bg-white p-6 rounded-lg shadow">
-                            <h2 className="text-xl font-bold mb-4">All Students</h2>
+                            <h2 className="text-xl font-bold mb-4">Student Enrollment</h2>
+
+                            <div className="mb-4">
+                                {['pending', 'enrolled', 'completed'].map(tab => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setActiveTab(tab)}
+                                        className={`px-4 py-2 mr-2 rounded ${activeTab === tab ? 'bg-indigo-600 text-white' : 'bg-gray-300'}`}
+                                    >
+                                        {tab.charAt(0).toUpperCase() + tab.slice(1)} Students
+                                    </button>
+                                ))}
+                            </div>
+
                             <table className="table-auto w-full border mb-4">
                                 <thead>
                                     <tr className="bg-gray-200">
-                                        <th className="p-2 border">ID Number</th>
                                         <th className="p-2 border">Email</th>
                                         <th className="p-2 border">Program</th>
+                                        <th className="p-2 border">Status</th>
                                         <th className="p-2 border">Actions</th>
                                     </tr>
                                 </thead>
+                                <tbody>
+                                    {filteredStudents.map((student, index) => (
+                                        <tr key={index} className="text-center">
+                                            <td className="border p-2">{student.email}</td>
+                                            <td className="border p-2">{student.program_name || 'N/A'}</td>
+                                            <td className="border p-2">{student.status}</td>
+                                            <td className="border p-2">
+                                                <button
+                                                    onClick={() => viewStudent(student.student_id)}
+                                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm"
+                                                >
+                                                    View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
                             </table>
                         </div>
                     </div>
+
+                    {showModal && details && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                            <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl">
+                                <h3 className="text-xl font-bold mb-4">Student Details</h3>
+                                <p><strong>Name:</strong> {details.student_name}</p>
+                                <p><strong>Email:</strong> {details.student_email}</p>
+                                <p><strong>ID Number:</strong> {details.student_id_number}</p>
+                                <p><strong>Address:</strong> {details.address}</p>
+                                <p><strong>Program:</strong> {details.program_name}</p>
+                                <p><strong>Enrolled Courses:</strong></p>
+                                <ul className="list-disc pl-5">
+                                    {details.courses?.map((course, idx) => (
+                                        <li key={idx}>{course.course_code} - {course.course_description} ({course.units} units)</li>
+                                    ))}
+                                </ul>
+
+                                {details.status === 'pending' && (
+                                    <div className="mt-4">
+                                        <button
+                                            onClick={() => handleEnrollStatus(details.student_id)}
+                                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                                        >
+                                            Enroll Student
+                                        </button>
+                                    </div>
+                                )}
+
+                                <div className="mt-6 text-right">
+                                    <button
+                                        onClick={() => setShowModal(false)}
+                                        className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         }

@@ -5,10 +5,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Dashboard | CGS Portal</title>
+
+    <!-- React, Babel, Tailwind, Chart.js -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -20,9 +23,6 @@
         function AdminPage() {
             const [user, setUser] = useState(null);
             const [isLoading, setIsLoading] = useState(true);
-            const [responses, setResponses] = useState([]);
-            const [newKeyword, setNewKeyword] = useState('');
-            const [newResponse, setNewResponse] = useState('');
 
             useEffect(() => {
                 const storedUser = localStorage.getItem('user');
@@ -33,31 +33,64 @@
                         return;
                     }
                     setUser(parsedUser);
-                    setIsLoading(false);
                 } else {
                     window.location.href = 'index.html';
                 }
             }, []);
 
-            const fetchResponses = async () => {
-                const res = await fetch('http://localhost:5000/api/chatbot/all');
-                const data = await res.json();
-                setResponses(data);
-            };
-
             useEffect(() => {
-                fetchResponses();
-            }, []);
+                if (!user) return;
 
-            const toggleStatus = async (id) => {
-                await fetch(`http://localhost:5000/api/chatbot/toggle/${id}`, { method: 'PATCH' });
-                fetchResponses();
-            };
+                fetch('http://127.0.0.1:5000/api/dashboard/students-per-program')
+                    .then(res => res.json())
+                    .then(data => {
+                        new Chart(document.getElementById('studentsChart'), {
+                            type: 'bar',
+                            data: {
+                                labels: data.map(d => d.program),
+                                datasets: [{
+                                    label: 'Students',
+                                    data: data.map(d => d.students),
+                                    backgroundColor: '#6366F1'
+                                }]
+                            }
+                        });
+                    });
 
-            const deleteResponse = async (id) => {
-                await fetch(`http://localhost:5000/api/chatbot/delete/${id}`, { method: 'DELETE' });
-                fetchResponses();
-            };
+                fetch('http://localhost:5000/api/dashboard/enrollments-per-month')
+                    .then(res => res.json())
+                    .then(data => {
+                        new Chart(document.getElementById('enrollmentsChart'), {
+                            type: 'line',
+                            data: {
+                                labels: data.map(d => d.date),
+                                datasets: [{
+                                    label: 'Enrollments',
+                                    data: data.map(d => d.enrollments),
+                                    borderColor: '#10B981',
+                                    fill: false,
+                                    tension: 0.3
+                                }]
+                            }
+                        });
+                    });
+
+                fetch('http://localhost:5000/api/dashboard/faculty-load')
+                    .then(res => res.json())
+                    .then(data => {
+                        new Chart(document.getElementById('facultyChart'), {
+                            type: 'bar',
+                            data: {
+                                labels: data.map(d => d.faculty_name),
+                                datasets: [{
+                                    label: 'Courses Taught',
+                                    data: data.map(d => d.course_count),
+                                    backgroundColor: '#F59E0B'
+                                }]
+                            }
+                        });
+                    });
+            }, [user]);
 
             const handleLogout = () => {
                 localStorage.removeItem('authToken');
@@ -65,10 +98,10 @@
                 window.location.href = 'index.html';
             };
 
-            if (isLoading) {
+            if (!user) {
                 return (
                     <div className="flex justify-center items-center h-screen">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+                        <div className="animate-spin h-10 w-10 border-t-2 border-b-2 border-indigo-500 rounded-full"></div>
                     </div>
                 );
             }
@@ -81,116 +114,39 @@
                             CGS Admin Panel
                         </div>
                         <ul className="flex-1 mt-4 space-y-1 px-4">
-                            <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Dashboard</a></li>
-                            <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Programs</a></li>
-                            <li><a href="students.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Students</a></li>
-                            <li><a href="chatbotAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Chatbot</a></li>
-                            <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Forms</a></li>
-                            <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Settings</a></li>
+                            <li><a href="admin.html" className="block py-2 px-3 rounded bg-indigo-700">Dashboard</a></li>
+                            <li><a href="programs.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Programs</a></li>
+                            <li><a href="students.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Students</a></li>
+                            <li><a href="chatbotAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Chatbot</a></li>
+                            <li><a href="facultyAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Faculty</a></li>
                         </ul>
                         <div className="p-4 border-t border-indigo-700 text-sm">
                             Logged in as: <span className="font-semibold">{user?.email}</span>
+                            <br />
+                            <button onClick={handleLogout} className="mt-2 text-red-300 hover:text-red-100 underline">
+                                Logout
+                            </button>
                         </div>
                     </div>
 
                     {/* Main content */}
-                    <div className="flex-1 bg-gray-100 p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <h1 className="text-3xl font-bold text-gray-800">
-                                Welcome Admin, {user?.email}!
-                            </h1>
-                            <button
-                                onClick={handleLogout}
-                                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                            >
-                                Logout
-                            </button>
-                        </div>
+                    <div className="flex-1 p-6 bg-gray-100">
+                        <h1 className="text-3xl font-bold mb-6 text-gray-800">
+                            Welcome Admin, {user?.email}
+                        </h1>
 
-                        {/* Overview */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div className="bg-white rounded-lg shadow p-6 text-center">
-                                <p className="text-sm text-gray-500">Total Users</p>
-                                <h3 className="text-2xl font-bold text-gray-800">4</h3>
+                            <div className="bg-white p-4 rounded shadow">
+                                <h2 className="text-lg font-semibold mb-2">📈 Total Students per Program</h2>
+                                <canvas id="studentsChart"></canvas>
                             </div>
-                            <div className="bg-white rounded-lg shadow p-6 text-center">
-                                <p className="text-sm text-gray-500">Total Programs</p>
-                                <h3 className="text-2xl font-bold text-gray-800">12</h3>
+                            <div className="bg-white p-4 rounded shadow">
+                                <h2 className="text-lg font-semibold mb-2">📅 Enrollments per Month</h2>
+                                <canvas id="enrollmentsChart"></canvas>
                             </div>
-                        </div>
-
-                        {/* Chatbot Management */}
-                        <div id="chatbot" className="bg-white rounded-lg shadow p-6 mt-6">
-                            <h2 className="text-xl font-semibold mb-4">Chatbot Responses</h2>
-
-                            <form
-                                onSubmit={async (e) => {
-                                    e.preventDefault();
-                                    if (!newKeyword || !newResponse) return;
-                                    await fetch('http://localhost:5000/api/chatbot/add', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ keyword: newKeyword, response: newResponse })
-                                    });
-                                    setNewKeyword('');
-                                    setNewResponse('');
-                                    fetchResponses();
-                                }}
-                                className="flex flex-col md:flex-row gap-2 mb-4"
-                            >
-                                <input
-                                    type="text"
-                                    placeholder="Keyword"
-                                    className="border px-3 py-2 rounded w-full"
-                                    value={newKeyword}
-                                    onChange={(e) => setNewKeyword(e.target.value)}
-                                />
-                                <input
-                                    type="text"
-                                    placeholder="Response"
-                                    className="border px-3 py-2 rounded w-full"
-                                    value={newResponse}
-                                    onChange={(e) => setNewResponse(e.target.value)}
-                                />
-                                <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-                                    Add
-                                </button>
-                            </form>
-
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full table-auto border">
-                                    <thead className="bg-gray-100">
-                                        <tr>
-                                            <th className="px-4 py-2 border">Keyword</th>
-                                            <th className="px-4 py-2 border">Response</th>
-                                            <th className="px-4 py-2 border">Status</th>
-                                            <th className="px-4 py-2 border">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {responses.map((item, idx) => (
-                                            <tr key={idx} className="text-sm">
-                                                <td className="px-4 py-2 border">{item.keyword}</td>
-                                                <td className="px-4 py-2 border">{item.response}</td>
-                                                <td className="px-4 py-2 border">{item.is_active ? 'Active' : 'Inactive'}</td>
-                                                <td className="px-4 py-2 border space-x-2">
-                                                    <button
-                                                        onClick={() => toggleStatus(item.id)}
-                                                        className="text-blue-600 hover:underline"
-                                                    >
-                                                        {item.is_active ? 'Deactivate' : 'Activate'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => deleteResponse(item.id)}
-                                                        className="text-red-600 hover:underline"
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                            <div className="bg-white p-4 rounded shadow col-span-1 md:col-span-2">
+                                <h2 className="text-lg font-semibold mb-2">🧑‍🏫 Faculty Load</h2>
+                                <canvas id="facultyChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -198,8 +154,7 @@
             );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<AdminPage />);
+        ReactDOM.createRoot(document.getElementById('root')).render(<AdminPage />);
     </script>
 </body>
 

@@ -55,9 +55,12 @@
 
                         if (data.user.user_level === 'admin') {
                             window.location.href = 'admin.html';
+                        } else if (data.user.user_level === 'teacher') {
+                            window.location.href = 'teacher-home.html';
                         } else {
                             window.location.href = 'home.html';
                         }
+
                     } else {
                         setErrors({ submit: data.error });
                     }

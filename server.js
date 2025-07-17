@@ -113,6 +113,60 @@ app.get('/api/courses/offered/:programId', async (req, res) => {
     }
 });
 
+// Add new course endpoint (programs.html)
+app.get('/api/courses', async (req, res) => {
+    try {
+        const status = req.query.status;
+
+        let query = `
+            SELECT
+                c.course_id,
+                c.course_code,
+                c.course_description,
+                c.units,
+                p.program_name
+            FROM courses c
+            JOIN programs p ON c.program_id = p.program_id
+        `;
+
+        const params = [];
+
+        if (status === 'offered' || status === 'not offered') {
+            query += ' WHERE c.offered = ?';
+            params.push(status);
+        }
+
+        const [rows] = await pool.query(query, params);
+
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching courses:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// ✅ Add this route for updating offered status (progrmams.html)
+app.patch('/api/courses/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { offered } = req.body;
+
+    try {
+        const [result] = await pool.query(
+            'UPDATE courses SET offered = ? WHERE course_id = ?',
+            [offered, id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+
+        res.json({ message: 'Course status updated successfully.' });
+    } catch (error) {
+        console.error('Error updating course status:', error);
+        res.status(500).json({ error: 'Failed to update course status.' });
+    }
+});
+
 // Registration endpoint (registration.html)
 app.post('/api/register', async (req, res) => {
     try {
@@ -155,7 +209,47 @@ app.post('/api/register', async (req, res) => {
 
 
 // Fetch courses endpoint(courses_offered.html)
-app.get('/api/courses', async (req, res) => {
+function formatSchedule(raw) {
+    if (!raw || raw.toUpperCase() === 'TBA') return null;
+
+    const match = raw.match(/^([\d:]+)-([\d:]+)([MTWFS]|Th)$/);
+    if (!match) return raw;
+
+    const [_, start, end, dayCode] = match;
+
+    const dayMap = {
+        M: 'Monday',
+        T: 'Tuesday',
+        W: 'Wednesday',
+        Th: 'Thursday',
+        F: 'Friday',
+        S: 'Saturday'
+    };
+
+    const day = dayMap[dayCode] || dayCode;
+
+    const isSaturday = dayCode === 'S';
+
+    const formatTime = (t) => {
+        if (t.includes(':')) {
+            let [h, m] = t.split(':').map(Number);
+            if (!isSaturday && h < 12) h += 12;
+            const suffix = h >= 12 ? 'PM' : 'AM';
+            h = h > 12 ? h - 12 : h;
+            return `${h}:${String(m).padStart(2, '0')} ${suffix}`;
+        } else {
+            let h = parseInt(t);
+            let suffix = isSaturday ? 'AM' : 'PM';
+            if (!isSaturday && h < 12) h += 12;
+            h = h > 12 ? h - 12 : h;
+            return `${h}:00 ${suffix}`;
+        }
+    };
+
+    return `${formatTime(start)} - ${formatTime(end)} (${day})`;
+}
+
+app.get('/api/courses/offered-detailed', async (req, res) => {
     try {
         const [rows] = await pool.query(`
             SELECT
@@ -172,15 +266,19 @@ app.get('/api/courses', async (req, res) => {
             LEFT JOIN faculty f ON cf.faculty_id = f.faculty_id
             WHERE c.offered = 'offered'
             GROUP BY c.course_id
-            `);
-
+        `);
 
         const formatted = rows.map(course => ({
             course_code: course.course_code,
             program_name: course.program_name,
             course_description: course.course_description,
             units: course.units,
-            schedules: course.schedules ? course.schedules.split(',') : [],
+            schedules: course.schedules
+                ? course.schedules
+                    .split(',')
+                    .map(s => formatSchedule(s))
+                    .filter(Boolean)
+                : [],
             faculty: course.faculty ? course.faculty.split(',') : []
         }));
 
@@ -225,8 +323,46 @@ app.get('/api/chatbot', async (req, res) => {
     }
 });
 
+// Dashboard statistics (admin.html)
+app.get('/api/dashboard/students-per-program', async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT p.program_name, COUNT(u.id) AS student_count
+            FROM users u
+            JOIN programs p ON u.program_id = p.program_id
+            WHERE u.user_level = 'student'
+            GROUP BY p.program_name
+        `);
+        res.json(rows.map(row => ({
+            program: row.program_name,
+            students: row.student_count
+        })));
+    } catch (error) {
+        console.error('Error fetching students per program:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
-// Add chatbot response (admin.html)
+app.get('/api/dashboard/enrollments-per-month', async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT DATE_FORMAT(date_applied, '%b') AS month, COUNT(*) AS total
+            FROM enrollments
+            GROUP BY month
+            ORDER BY STR_TO_DATE(month, '%b')
+        `);
+        res.json(rows.map(row => ({
+            date: row.month,
+            enrollments: row.total
+        })));
+    } catch (error) {
+        console.error('Error fetching enrollments per month:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+
+// Add chatbot response (chatbotAdmin.html)
 app.post('/api/chatbot/add', async (req, res) => {
     const { keyword, response } = req.body;
     try {
@@ -241,7 +377,7 @@ app.post('/api/chatbot/add', async (req, res) => {
     }
 });
 
-// Get all responses (admin.html)
+// Get all responses (chatbotAdmin.html)
 app.get('/api/chatbot/all', async (req, res) => {
     try {
         const [rows] = await pool.query('SELECT * FROM chatbot_responses ORDER BY id DESC');
@@ -252,7 +388,7 @@ app.get('/api/chatbot/all', async (req, res) => {
     }
 });
 
-// Toggle active status (admin.html)
+// Toggle active status (chatbotAdmin.html)
 app.patch('/api/chatbot/toggle/:id', async (req, res) => {
     try {
         await pool.query('UPDATE chatbot_responses SET is_active = NOT is_active WHERE id = ?', [req.params.id]);
@@ -263,7 +399,7 @@ app.patch('/api/chatbot/toggle/:id', async (req, res) => {
     }
 });
 
-// Delete response (admin.html)
+// Delete response (chatbotAdmin.html)
 app.delete('/api/chatbot/delete/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM chatbot_responses WHERE id = ?', [req.params.id]);
@@ -278,18 +414,77 @@ app.delete('/api/chatbot/delete/:id', async (req, res) => {
 app.get('/api/students', async (req, res) => {
     try {
         const [students] = await pool.query(`
-            SELECT u.id, u.id_number, u.email, u.created_at, p.program_name
-            FROM users u
-            LEFT JOIN programs p ON u.program_id = p.program_id
-            WHERE u.user_level = 'student'
-            ORDER BY u.created_at DESC
+            SELECT 
+                enrollments.student_id,
+                users.id,
+                users.email,
+                users.full_name,
+                MIN(enrollments.status) AS status,
+                programs.program_name
+            FROM enrollments 
+            JOIN users ON enrollments.student_id = users.id
+            LEFT JOIN programs ON enrollments.program_id = programs.program_id
+            GROUP BY enrollments.student_id
+            ORDER BY enrollments.date_applied DESC
         `);
         res.json(students);
     } catch (err) {
-        console.error('Error fetching students:', err);
+        console.error('Error fetching enrolled students:', err);
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+// Get single student details for modal (students.html)
+app.get('/api/students/:id', async (req, res) => {
+    const studentId = req.params.id;
+    try {
+        const [[student]] = await pool.query(`
+            SELECT 
+                u.full_name AS student_name,
+                u.email AS student_email,
+                u.id AS student_id,
+                u.id AS student_id_number,
+                e.program_id,
+                e.address,
+                e.status,
+                p.program_name
+            FROM users u
+            LEFT JOIN enrollments e ON u.id = e.student_id
+            LEFT JOIN programs p ON e.program_id = p.program_id
+            WHERE u.id = ?
+            LIMIT 1;
+        `, [studentId]);
+
+        const [enrolledCourses] = await pool.query(`
+            SELECT courses.course_code, courses.course_description, courses.units
+            FROM enrollments
+            JOIN courses ON enrollments.course_id = courses.course_id
+            WHERE enrollments.student_id = ?
+        `, [studentId]);
+
+        res.json({
+            ...student,
+            courses: enrolledCourses
+        });
+    } catch (err) {
+        console.error('Error fetching student detail:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Update student status (students.html)
+app.patch('/api/students/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        await pool.query('UPDATE enrollments SET status = ? WHERE student_id = ?', [status, id]);
+        res.json({ message: 'Student status updated successfully.' });
+    } catch (err) {
+        console.error('Status update error:', err);
+        res.status(500).json({ error: 'Failed to update status.' });
+    }
+});
+
 
 // Student enrollment with metadata (enrollment.html)
 app.post('/api/student-courses/enroll', async (req, res) => {
@@ -483,14 +678,246 @@ app.get('/api/program-details/:programId', async (req, res) => {
     }
 });
 
+// Get all faculty members (teacher-home.html)
+app.get('/api/teacher/students/:facultyId', async (req, res) => {
+    const { facultyId } = req.params;
+    try {
+        const [rows] = await pool.query(`
+            SELECT 
+                e.student_id,
+                u.full_name AS student_name,
+                u.email AS student_email,
+                c.course_code,
+                c.course_description,
+                MAX(g.grade) AS grade
+            FROM course_faculty cf
+            JOIN courses c ON cf.course_id = c.course_id
+            JOIN enrollments e ON c.course_id = e.course_id
+            JOIN users u ON e.student_id = u.id
+            LEFT JOIN grades g ON e.enrollment_id = g.enrollment_id
+            WHERE cf.faculty_id = ?
+            GROUP BY e.student_id, c.course_id
+        `, [facultyId]);
+
+        res.json(rows);
+    } catch (err) {
+        console.error('Error fetching students:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+app.get('/api/faculty/by-user/:userId', async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const [[row]] = await pool.query('SELECT faculty_id FROM faculty WHERE user_id = ?', [userId]);
+        if (!row) return res.status(404).json({ error: 'Faculty not found' });
+        res.json(row);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
 
-// // ✅ Correct for your actual folder
-// app.use(express.static(path.join(__dirname, '../client')));
+// Add this to the bottom of server.js
+app.post('/api/admin/end-term', async (req, res) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
 
-// app.get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, '../client/login.html'));
-// });
+        // 1. Backup current state (optional for undo - simple version stores in memory, real version would use a table)
+        const [backups] = await connection.query(`
+            SELECT * FROM courses WHERE offered = 'offered'
+        `);
+
+        global._previousOfferedCourses = backups.map(course => ({
+            course_id: course.course_id
+        }));
+
+        // 2. Set all courses to 'not offered'
+        await connection.query(`UPDATE courses SET offered = 'not offered' WHERE offered = 'offered'`);
+
+        // 3. Remove all schedules linked to offered courses
+        await connection.query(`DELETE FROM schedules WHERE course_id IN (SELECT course_id FROM courses)`);
+
+        // 4. Remove all faculty assignments linked to offered courses
+        await connection.query(`DELETE FROM course_faculty WHERE course_id IN (SELECT course_id FROM courses)`);
+
+        await connection.commit();
+        res.json({ message: 'Term successfully ended. All offerings reset.' });
+    } catch (error) {
+        await connection.rollback();
+        console.error('End term error:', error);
+        res.status(500).json({ error: 'Failed to end term.' });
+    } finally {
+        connection.release();
+    }
+});
+
+// ✅ Undo endpoint
+app.post('/api/admin/undo-end-term', async (req, res) => {
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const backups = global._previousOfferedCourses || [];
+        if (!backups.length) {
+            return res.status(400).json({ error: 'No previous state to undo.' });
+        }
+
+        for (const course of backups) {
+            await connection.query(`UPDATE courses SET offered = 'offered' WHERE course_id = ?`, [course.course_id]);
+        }
+
+        global._previousOfferedCourses = []; // Clear after undo
+
+        await connection.commit();
+        res.json({ message: 'Undo successful. Course offerings restored.' });
+    } catch (error) {
+        await connection.rollback();
+        console.error('Undo error:', error);
+        res.status(500).json({ error: 'Failed to undo end term.' });
+    } finally {
+        connection.release();
+    }
+});
+
+// Utility: Validate schedule format (e.g. 8-12S or 5:30-7:30F)
+function isValidScheduleFormat(schedule) {
+    return /^\d{1,2}(:\d{2})?-\d{1,2}(:\d{2})?(M|T|W|Th|F|S)$/.test(schedule);
+}
+
+
+// Manually assign schedule and faculty name to offered course
+app.post('/api/courses/:courseId/schedule-faculty', async (req, res) => {
+    const { courseId } = req.params;
+    const { schedule, faculty_name } = req.body;
+
+    if (!schedule || !faculty_name) {
+        return res.status(400).json({ error: 'Schedule and faculty name are required.' });
+    }
+
+    if (!isValidScheduleFormat(schedule)) {
+        return res.status(400).json({ error: 'Invalid schedule format. Use e.g. 8-12S or 5:30-7:30F.' });
+    }
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        // Insert schedule
+        await connection.query(
+            'INSERT INTO schedules (course_id, day_time) VALUES (?, ?)',
+            [courseId, schedule]
+        );
+
+        // Insert faculty manually (if not already in faculty table)
+        const [existing] = await connection.query(
+            'SELECT faculty_id FROM faculty WHERE name = ?',
+            [faculty_name]
+        );
+
+        let facultyId;
+        if (existing.length) {
+            facultyId = existing[0].faculty_id;
+        } else {
+            const [inserted] = await connection.query(
+                'INSERT INTO faculty (name) VALUES (?)',
+                [faculty_name]
+            );
+            facultyId = inserted.insertId;
+        }
+
+        // Link course with faculty
+        await connection.query(
+            'INSERT INTO course_faculty (course_id, faculty_id) VALUES (?, ?)',
+            [courseId, facultyId]
+        );
+
+        await connection.commit();
+        res.json({ message: 'Schedule and faculty assigned successfully.' });
+    } catch (err) {
+        await connection.rollback();
+        console.error('Assign error:', err);
+        res.status(500).json({ error: 'Failed to assign schedule and faculty.' });
+    } finally {
+        connection.release();
+    }
+});
+
+// Get all faculty with linked email (for facultyAdmin.html)
+app.get('/api/faculty/all', async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT f.faculty_id, f.name, u.email
+            FROM faculty f
+            LEFT JOIN users u ON f.user_id = u.id
+            ORDER BY f.name ASC
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error('Fetch faculty failed:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Create new faculty account + link to faculty table
+app.post('/api/faculty/create-account', async (req, res) => {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+        return res.status(400).json({ error: 'Missing fields' });
+    }
+
+    const connection = await pool.getConnection();
+    try {
+        await connection.beginTransaction();
+
+        const [existing] = await connection.query(`SELECT * FROM users WHERE email = ?`, [email]);
+        if (existing.length) {
+            return res.status(400).json({ error: 'Email already exists' });
+        }
+
+        const hashed = await bcrypt.hash(password, 10);
+        const [userResult] = await connection.query(
+            `INSERT INTO users (full_name, email, password, user_level) VALUES (?, ?, ?, 'teacher')`,
+            [name, email, hashed]
+        );
+        const userId = userResult.insertId;
+
+        const [faculties] = await connection.query(`SELECT faculty_id FROM faculty WHERE name = ?`, [name]);
+        if (faculties.length) {
+            await connection.query(`UPDATE faculty SET user_id = ? WHERE name = ?`, [userId, name]);
+        } else {
+            await connection.query(`INSERT INTO faculty (name, user_id) VALUES (?, ?)`, [name, userId]);
+        }
+
+        await connection.commit();
+        res.json({ message: 'Faculty user created and linked.' });
+    } catch (err) {
+        await connection.rollback();
+        console.error('Create faculty error:', err);
+        res.status(500).json({ error: 'Failed to create faculty account' });
+    } finally {
+        connection.release();
+    }
+});
+
+// (admin.html)
+app.get('/api/dashboard/faculty-load', async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT f.name AS faculty_name, COUNT(cf.course_id) AS course_count
+            FROM faculty f
+            LEFT JOIN course_faculty cf ON f.faculty_id = cf.faculty_id
+            GROUP BY f.name
+            ORDER BY course_count DESC
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error('Error fetching faculty load:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
 
 // Start server

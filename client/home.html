@@ -2,14 +2,12 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CGS Portal - Home</title>
-    <!-- Load React and Babel -->
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -23,39 +21,38 @@
             const [user, setUser] = useState(null);
             const [isLoading, setIsLoading] = useState(true);
             const [sidebarOpen, setSidebarOpen] = useState(false);
+            const [subjects, setSubjects] = useState(0);
+            const [units, setUnits] = useState(0);
 
             useEffect(() => {
-                const authToken = localStorage.getItem('authToken');
-                const storedUser = localStorage.getItem('user');
-
-                if (storedUser) {
-                    setUser(JSON.parse(storedUser));
-                    setIsLoading(false);
-                } else if (authToken) {
-                    fetchUserData(authToken);
-                } else {
-                    window.location.href = 'index.html';
-                }
+                const storedUser = JSON.parse(localStorage.getItem('user'));
+                if (!storedUser) return (window.location.href = 'index.html');
+                setUser(storedUser);
+                fetchEnrollmentSummary(storedUser.id);
+                setIsLoading(false);
             }, []);
 
-            const fetchUserData = async (token) => {
+            const fetchEnrollmentSummary = async (userId) => {
                 try {
-                    const response = await fetch('http://localhost:5000/api/home', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
+                    const response = await fetch(`http://localhost:5000/api/enrollment/${userId}`);
+                    const { enrolled, data } = await response.json();
 
-                    if (response.ok) {
-                        const userData = await response.json();
-                        setUser(userData);
-                        localStorage.setItem('user', JSON.stringify(userData));
-                    } else {
-                        window.location.href = 'index.html';
+                    if (enrolled && Array.isArray(data)) {
+                        let subjectCount = 0;
+                        let unitCount = 0;
+
+                        for (const course of data) {
+                            if (!course.grade) {
+                                subjectCount++;
+                                unitCount += course.units || 0;
+                            }
+                        }
+
+                        setSubjects(subjectCount);
+                        setUnits(unitCount);
                     }
                 } catch (error) {
-                    console.error('Error fetching user data:', error);
-                    window.location.href = 'index.html';
-                } finally {
-                    setIsLoading(false);
+                    console.error('Failed to fetch enrollment summary:', error);
                 }
             };
 
@@ -66,38 +63,32 @@
             };
 
             if (isLoading) {
-                return (
-                    <div className="flex justify-center items-center h-screen">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-                    </div>
-                );
+                return <div className="flex justify-center items-center h-screen"><div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-indigo-500 rounded-full"></div></div>;
             }
 
             return (
                 <>
-                    {/* Mobile menu button */}
+                    {/* Mobile menu */}
                     <div className="md:hidden flex justify-between items-center bg-indigo-700 text-white p-4">
                         <div className="text-xl font-bold">CGS Portal</div>
                         <button onClick={() => setSidebarOpen(!sidebarOpen)}>
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                                    d="M4 6h16M4 12h16M4 18h16" />
+                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </button>
                     </div>
+
                     <div className="flex min-h-screen">
                         {/* Sidebar */}
-                        <div className={`fixed z-40 inset-y-0 left-0 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} 
-                        md:relative md:translate-x-0 transition-transform duration-200 ease-in-out w-64 bg-indigo-700 text-white flex flex-col`}>
+                        <div className={`fixed z-40 inset-y-0 left-0 transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 transition-transform duration-200 ease-in-out w-64 bg-indigo-700 text-white flex flex-col`}>
                             <div className="p-5 text-2xl font-bold border-b border-indigo-500">CGS Portal</div>
                             <ul className="flex-1 mt-4 space-y-1 px-4">
-                                <li><a href="home.html" className="block py-2 px-3 rounded bg-indigo-600 transition">Home</a></li>
-                                <li><a href="enrollment.html" className="block py-2 px-3 rounded hover:bg-indigo-600 transition">Enrollment</a></li>
-                                <li><a href="checklist.html" className="block py-2 px-3 rounded hover:bg-indigo-600 transition">Checklist</a></li>
-                                <li><a href="citizens-charter.html" className="block py-2 px-3 rounded hover:bg-indigo-600 transition">Citizens Charter</a></li>
-                                <li><a href="chatbot.html" className="block py-2 px-3 rounded hover:bg-indigo-600 transition">Chatbot</a></li>
-                                <li><a href="settings.html" className="block py-2 px-3 rounded hover:bg-indigo-600 transition">Settings</a></li>
+                                <li><a href="home.html" className="block py-2 px-3 rounded bg-indigo-600">Home</a></li>
+                                <li><a href="enrollment.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Enrollment</a></li>
+                                <li><a href="checklist.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Checklist</a></li>
+                                <li><a href="citizens-charter.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Citizens Charter</a></li>
+                                <li><a href="chatbot.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Chatbot</a></li>
+                                <li><a href="settings.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Settings</a></li>
                             </ul>
                             <div className="p-4 border-t border-indigo-600 text-sm">
                                 Logged in as: <span className="font-semibold">{user?.email}</span>
@@ -107,15 +98,8 @@
                         {/* Main Content */}
                         <div className="flex-1 bg-gray-100 p-6">
                             <div className="flex justify-between items-center mb-6">
-                                <h1 className="text-3xl font-bold text-gray-800">
-                                    Welcome back, {user?.email || 'User'}!
-                                </h1>
-                                <button
-                                    onClick={handleLogout}
-                                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
-                                >
-                                    Logout
-                                </button>
+                                <h1 className="text-3xl font-bold text-gray-800">Welcome back, {user?.email || 'User'}!</h1>
+                                <button onClick={handleLogout} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">Logout</button>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -123,7 +107,6 @@
                                     <h2 className="text-xl font-semibold mb-4">Your Account</h2>
                                     <ul className="text-gray-700 space-y-2">
                                         <li><strong>Email:</strong> {user?.email}</li>
-                                        <li><strong>ID Number:</strong> {user?.id_number}</li>
                                         <li><strong>Account Created:</strong> {new Date(user?.created_at).toLocaleString()}</li>
                                     </ul>
                                 </div>
@@ -134,13 +117,13 @@
                                 </div>
                             </div>
 
-
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-white rounded-lg shadow p-6">
                                     <h2 className="text-xl font-semibold mb-4">Enrollment Details</h2>
-                                    <p><strong>Subject Enrolled:</strong> 0</p>
-                                    <p><strong>Units Enrolled:</strong> 0</p>
+                                    <p><strong>Subjects Enrolled:</strong> {subjects}</p>
+                                    <p><strong>Units Enrolled:</strong> {units}</p>
                                 </div>
+
                                 <div className="bg-white rounded-lg shadow p-6">
                                     <h2 className="text-xl font-semibold mb-4">Academic Calendar</h2>
                                     <div className="grid grid-cols-7 text-center gap-1 text-sm text-gray-700">
@@ -161,7 +144,6 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<HomePage />);
-
     </script>
 </body>
 
