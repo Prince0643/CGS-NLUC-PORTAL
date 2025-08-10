@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jul 06, 2025 at 11:47 AM
+-- Generation Time: Aug 10, 2025 at 04:53 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -20,6 +20,27 @@ SET time_zone = "+00:00";
 --
 -- Database: `cgs`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `announcements`
+--
+
+CREATE TABLE `announcements` (
+  `id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `created_by` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `announcements`
+--
+
+INSERT INTO `announcements` (`id`, `title`, `message`, `created_by`, `created_at`) VALUES
+(1, 'adsafsa', 'dsadsadsa', 6, '2025-08-07 15:03:15');
 
 -- --------------------------------------------------------
 
@@ -317,7 +338,7 @@ CREATE TABLE `enrollments` (
   `term` varchar(10) NOT NULL,
   `academic_year` varchar(10) NOT NULL,
   `student_category` varchar(4) NOT NULL,
-  `status` enum('pending','approved','rejected') DEFAULT 'pending',
+  `status` enum('pending','enrolled','rejected') DEFAULT 'pending',
   `id_number` varchar(50) DEFAULT NULL,
   `date_applied` timestamp NOT NULL DEFAULT current_timestamp(),
   `full_name` varchar(100) DEFAULT NULL,
@@ -338,9 +359,9 @@ INSERT INTO `enrollments` (`enrollment_id`, `student_id`, `course_id`, `term`, `
 (334, 15, 31, '1st Sem', '2025-2026', 'Old', 'pending', NULL, '2025-07-04 12:06:45', NULL, NULL, 'Pagdalagan, San Fernando City, La Union', NULL, 'Mark Morillo Quinitip', 'mark@gmail.com', '211-1003-6', 11),
 (335, 15, 32, '1st Sem', '2025-2026', 'Old', 'pending', NULL, '2025-07-04 12:06:45', NULL, NULL, 'Pagdalagan, San Fernando City, La Union', NULL, 'Mark Morillo Quinitip', 'mark@gmail.com', '211-1003-6', 11),
 (336, 15, 33, '1st Sem', '2025-2026', 'Old', 'pending', NULL, '2025-07-04 12:06:45', NULL, NULL, 'Pagdalagan, San Fernando City, La Union', NULL, 'Mark Morillo Quinitip', 'mark@gmail.com', '211-1003-6', 11),
-(337, 14, 13, '1st Sem', '2025-2026', 'New', 'pending', NULL, '2025-07-04 13:34:47', NULL, NULL, 'Sevilla, San Fernando City, La Union', NULL, 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 5),
-(338, 14, 14, '1st Sem', '2025-2026', 'New', 'pending', NULL, '2025-07-04 13:34:47', NULL, NULL, 'Sevilla, San Fernando City, La Union', NULL, 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 5),
-(339, 14, 15, '1st Sem', '2025-2026', 'New', 'pending', NULL, '2025-07-04 13:34:47', NULL, NULL, 'Sevilla, San Fernando City, La Union', NULL, 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 5);
+(337, 14, 13, '1st Sem', '2025-2026', 'New', 'enrolled', NULL, '2025-07-04 13:34:47', NULL, NULL, 'Sevilla, San Fernando City, La Union', NULL, 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 5),
+(338, 14, 14, '1st Sem', '2025-2026', 'New', 'enrolled', NULL, '2025-07-04 13:34:47', NULL, NULL, 'Sevilla, San Fernando City, La Union', NULL, 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 5),
+(339, 14, 15, '1st Sem', '2025-2026', 'New', 'enrolled', NULL, '2025-07-04 13:34:47', NULL, NULL, 'Sevilla, San Fernando City, La Union', NULL, 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 5);
 
 -- --------------------------------------------------------
 
@@ -374,33 +395,77 @@ INSERT INTO `enrollment_fees` (`id`, `student_id`, `total_units`, `tuition_fee`,
 
 CREATE TABLE `faculty` (
   `faculty_id` int(11) NOT NULL,
-  `name` varchar(255) NOT NULL
+  `name` varchar(255) NOT NULL,
+  `user_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `faculty`
 --
 
-INSERT INTO `faculty` (`faculty_id`, `name`) VALUES
-(15, 'AGLaquidan'),
-(5, 'AVSagun'),
-(18, 'DANeri'),
-(12, 'DAVilar'),
-(8, 'DPLicay'),
-(19, 'ECEbuenga'),
-(6, 'FMCamalig'),
-(1, 'GSNisperos'),
-(17, 'GTBondot'),
-(14, 'JCortado'),
-(11, 'JJCAndrada'),
-(16, 'JNQuinquito'),
-(2, 'JRETabafunda'),
-(13, 'LDGavina'),
-(7, 'MBMendoza'),
-(9, 'NBTugelida'),
-(4, 'PPFontanilla'),
-(3, 'TBA'),
-(10, 'VMLibunao');
+INSERT INTO `faculty` (`faculty_id`, `name`, `user_id`) VALUES
+(1, 'GSNisperos', NULL),
+(2, 'JRETabafunda', NULL),
+(3, 'TBA', NULL),
+(4, 'PPFontanilla', NULL),
+(5, 'AVSagun', 17),
+(6, 'FMCamalig', NULL),
+(7, 'MBMendoza', NULL),
+(8, 'DPLicay', NULL),
+(9, 'NBTugelida', 18),
+(10, 'VMLibunao', NULL),
+(11, 'JJCAndrada', NULL),
+(12, 'DAVilar', NULL),
+(13, 'LDGavina', NULL),
+(14, 'JCortado', NULL),
+(15, 'AGLaquidan', 16),
+(16, 'JNQuinquito', NULL),
+(17, 'GTBondot', NULL),
+(18, 'DANeri', NULL),
+(19, 'ECEbuenga', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `grades`
+--
+
+CREATE TABLE `grades` (
+  `grade_id` int(11) NOT NULL,
+  `enrollment_id` int(11) NOT NULL,
+  `grade` varchar(10) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `grades`
+--
+
+INSERT INTO `grades` (`grade_id`, `enrollment_id`, `grade`, `created_at`, `updated_at`) VALUES
+(1, 337, '89', '2025-08-08 06:04:35', '2025-08-08 06:04:35'),
+(2, 338, '92', '2025-08-08 06:05:42', '2025-08-08 06:05:42');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `logs`
+--
+
+CREATE TABLE `logs` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `action` varchar(255) NOT NULL,
+  `details` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `logs`
+--
+
+INSERT INTO `logs` (`id`, `user_id`, `action`, `details`, `created_at`) VALUES
+(1, NULL, 'Backup', 'Database backup downloaded', '2025-08-10 14:31:08');
 
 -- --------------------------------------------------------
 
@@ -547,7 +612,7 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `full_name` varchar(100) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `user_level` enum('admin','student') NOT NULL DEFAULT 'student',
+  `user_level` enum('admin','student','teacher') NOT NULL DEFAULT 'student',
   `program_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -563,11 +628,21 @@ INSERT INTO `users` (`id`, `email`, `password`, `full_name`, `created_at`, `user
 (12, 'tolentinochristian89@gmail.com', '$2b$10$mNfLLKuEPmBqx7cIr62PoOOGnQuEICPqS0Gsunlq6jqO/rzO6WStO', '', '2025-06-30 10:03:56', 'student', NULL),
 (13, 'prence@gmail.com', '$2b$10$FNO0JFizImtzMS8jL2VuCexsgbRM1/JFpUiuexhXw.gjA2YvEurOG', '', '2025-06-30 14:57:16', 'student', NULL),
 (14, 'bianca@gmail.com', '$2b$10$gMdc7QlJw8mGsxXwKIrSR.ZtbXQjU2qwzH6hxGOIQljWQfkvRDr/u', 'Bianca Mairah', '2025-06-30 15:30:10', 'student', NULL),
-(15, 'mark@gmail.com', '$2b$10$12haxuMG42A0O8JBMnhSBeoHVyy3cyGhNzVM4oyRD/lqj706QERG6', 'Mark Morillo Quinitip', '2025-07-04 12:05:54', 'student', NULL);
+(15, 'mark@gmail.com', '$2b$10$12haxuMG42A0O8JBMnhSBeoHVyy3cyGhNzVM4oyRD/lqj706QERG6', 'Mark Morillo Quinitip', '2025-07-04 12:05:54', 'student', NULL),
+(16, 'aglaquidan@gmail.com', '$2b$10$M85TFcZONVbqzUYBTX5lI.cUiut7xKjSZqnf2ccruM.rHxQ4iXNRm', 'AGLaquidan', '2025-08-07 15:06:08', 'teacher', NULL),
+(17, 'avsagun@gmail.com', '$2b$10$CuDg/lSKzW0WVWVdoPVE.Oe0BC0h5J8cz3jrtot98FGa5DxfBMYEa', 'AVSagun', '2025-08-08 05:32:57', 'teacher', NULL),
+(18, 'nbtugelida@gmail.com', '$2b$10$DDob9R2x8ChvbMZt4MY7yethQmwvegTWmXXDvFZqdfl8FPmsmu8fK', 'NBTugelida', '2025-08-08 05:55:28', 'teacher', NULL);
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `announcements`
+--
+ALTER TABLE `announcements`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `created_by` (`created_by`);
 
 --
 -- Indexes for table `chatbot_responses`
@@ -610,7 +685,22 @@ ALTER TABLE `enrollment_fees`
 --
 ALTER TABLE `faculty`
   ADD PRIMARY KEY (`faculty_id`),
-  ADD UNIQUE KEY `name` (`name`);
+  ADD UNIQUE KEY `name` (`name`),
+  ADD KEY `fk_faculty_user` (`user_id`);
+
+--
+-- Indexes for table `grades`
+--
+ALTER TABLE `grades`
+  ADD PRIMARY KEY (`grade_id`),
+  ADD KEY `enrollment_id` (`enrollment_id`);
+
+--
+-- Indexes for table `logs`
+--
+ALTER TABLE `logs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `programs`
@@ -638,6 +728,12 @@ ALTER TABLE `users`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `announcements`
+--
+ALTER TABLE `announcements`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `chatbot_responses`
@@ -670,6 +766,18 @@ ALTER TABLE `faculty`
   MODIFY `faculty_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
+-- AUTO_INCREMENT for table `grades`
+--
+ALTER TABLE `grades`
+  MODIFY `grade_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `logs`
+--
+ALTER TABLE `logs`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `programs`
 --
 ALTER TABLE `programs`
@@ -685,11 +793,17 @@ ALTER TABLE `schedules`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `announcements`
+--
+ALTER TABLE `announcements`
+  ADD CONSTRAINT `announcements_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `courses`
@@ -716,6 +830,24 @@ ALTER TABLE `enrollments`
 --
 ALTER TABLE `enrollment_fees`
   ADD CONSTRAINT `enrollment_fees_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `faculty`
+--
+ALTER TABLE `faculty`
+  ADD CONSTRAINT `fk_faculty_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `grades`
+--
+ALTER TABLE `grades`
+  ADD CONSTRAINT `grades_ibfk_1` FOREIGN KEY (`enrollment_id`) REFERENCES `enrollments` (`enrollment_id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `logs`
+--
+ALTER TABLE `logs`
+  ADD CONSTRAINT `logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `schedules`

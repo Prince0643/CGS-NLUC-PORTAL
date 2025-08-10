@@ -78,18 +78,72 @@
                 fetch('http://localhost:5000/api/dashboard/faculty-load')
                     .then(res => res.json())
                     .then(data => {
+                        // Filter out TBA or null/empty names
+                        const filtered = data.filter(d => d.faculty_name && d.faculty_name.toUpperCase() !== 'TBA');
+
                         new Chart(document.getElementById('facultyChart'), {
                             type: 'bar',
                             data: {
-                                labels: data.map(d => d.faculty_name),
+                                labels: filtered.map(d => d.faculty_name),
                                 datasets: [{
                                     label: 'Courses Taught',
-                                    data: data.map(d => d.course_count),
+                                    data: filtered.map(d => d.course_count),
                                     backgroundColor: '#F59E0B'
                                 }]
                             }
                         });
                     });
+            }, [user]);
+
+            function postAnnouncement() {
+                const title = document.getElementById('announcementTitle').value.trim();
+                const message = document.getElementById('announcementMessage').value.trim();
+                const userId = user?.id;
+
+                if (!title || !message) {
+                    alert('Please enter both title and message.');
+                    return;
+                }
+
+                fetch('http://localhost:5000/api/announcements', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, message, created_by: userId })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('announcementTitle').value = '';
+                            document.getElementById('announcementMessage').value = '';
+                            fetchAnnouncements();
+                        } else {
+                            alert('Failed to post announcement.');
+                        }
+                    });
+            }
+
+            function fetchAnnouncements() {
+                fetch('http://localhost:5000/api/announcements')
+                    .then(res => res.json())
+                    .then(data => {
+                        const list = document.getElementById('announcementList');
+                        list.innerHTML = '';
+                        data.forEach(a => {
+                            const li = document.createElement('li');
+                            li.innerHTML = `
+                    <strong>${a.title}</strong>
+                    <span class="text-gray-500 text-xs"> (${new Date(a.created_at).toLocaleString()})</span><br/>
+                    ${a.message}
+                `;
+                            list.appendChild(li);
+                        });
+                    });
+            }
+
+            useEffect(() => {
+                if (user) {
+                    fetchAnnouncements();
+                }
             }, [user]);
 
             const handleLogout = () => {
@@ -119,34 +173,76 @@
                             <li><a href="students.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Students</a></li>
                             <li><a href="chatbotAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Chatbot</a></li>
                             <li><a href="facultyAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Faculty</a></li>
+                            <li><a href="adminSettings.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Settings</a></li>
                         </ul>
-                        <div className="p-4 border-t border-indigo-700 text-sm">
-                            Logged in as: <span className="font-semibold">{user?.email}</span>
-                            <br />
-                            <button onClick={handleLogout} className="mt-2 text-red-300 hover:text-red-100 underline">
-                                Logout
-                            </button>
-                        </div>
+
                     </div>
 
                     {/* Main content */}
                     <div className="flex-1 p-6 bg-gray-100">
-                        <h1 className="text-3xl font-bold mb-6 text-gray-800">
-                            Welcome Admin, {user?.email}
-                        </h1>
+                        <div className="flex justify-between items-center mb-4">
+                            <h1 className="text-3xl font-bold text-gray-800">
+                                Welcome Admin, {user?.email}
+                            </h1>
+                            <button
+                                onClick={handleLogout}
+                                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                            >
+                                Logout
+                            </button>
+                        </div>
 
+
+                        {/* Announcements Section Inline */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            {/* Post Announcement */}
+                            <div className="bg-white p-4 rounded shadow">
+                                <h2 className="text-xl font-bold mb-4">📢 Post Announcement</h2>
+                                <div className="mb-2">
+                                    <input
+                                        type="text"
+                                        id="announcementTitle"
+                                        placeholder="Title"
+                                        className="w-full border p-2 rounded mb-2"
+                                    />
+                                    <textarea
+                                        id="announcementMessage"
+                                        placeholder="Message"
+                                        className="w-full border p-2 rounded mb-2"
+                                        rows="3"
+                                    ></textarea>
+                                    <button
+                                        onClick={postAnnouncement}
+                                        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+                                    >
+                                        Post
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Latest Announcement */}
+                            <div className="bg-white p-4 rounded shadow">
+                                <h2 className="text-xl font-bold mb-3">📢 Latest Announcement</h2>
+                                <ul id="announcementList" className="space-y-2 text-gray-700 text-sm"></ul>
+                            </div>
+                        </div>
+
+
+                        {/* Charts Inline */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                             <div className="bg-white p-4 rounded shadow">
                                 <h2 className="text-lg font-semibold mb-2">📈 Total Students per Program</h2>
-                                <canvas id="studentsChart"></canvas>
+                                <canvas id="studentsChart" className="w-full h-[250px]"></canvas>
                             </div>
+
                             <div className="bg-white p-4 rounded shadow">
                                 <h2 className="text-lg font-semibold mb-2">📅 Enrollments per Month</h2>
-                                <canvas id="enrollmentsChart"></canvas>
+                                <canvas id="enrollmentsChart" className="w-full h-[250px]"></canvas>
                             </div>
-                            <div className="bg-white p-4 rounded shadow col-span-1 md:col-span-2">
+
+                            <div className="bg-white p-4 rounded shadow">
                                 <h2 className="text-lg font-semibold mb-2">🧑‍🏫 Faculty Load</h2>
-                                <canvas id="facultyChart"></canvas>
+                                <canvas id="facultyChart" className="w-full h-[250px]"></canvas>
                             </div>
                         </div>
                     </div>

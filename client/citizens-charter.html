@@ -8,8 +8,6 @@
 </head>
 
 <body class="bg-gray-100 min-h-screen">
-
-
     <div class="flex min-h-screen">
         <!-- Sidebar -->
         <div class="w-64 bg-indigo-700 text-white flex flex-col">
@@ -20,8 +18,7 @@
                         class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Enrollment</a></li>
                 <li><a href="checklist.html"
                         class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Checklist</a></li>
-                <li><a href="citizens-charter.html" class="block py-2 px-3 rounded bg-indigo-600 transition">Citizens
-                        Charter</a></li>
+                <li><a href="citizens-charter.html" class="block py-2 px-3 rounded bg-indigo-600 transition">Downloads</a></li>
                 <li><a href="chatbot.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Chatbot</a>
                 </li>
                 <li><a href="settings.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Settings</a>
@@ -32,16 +29,84 @@
             </div>
         </div>
 
-        <!-- Main PDF Viewer -->
+        <!-- Main Content -->
         <div class="flex-1 bg-white p-6">
-            <h1 class="text-3xl font-bold text-gray-800 mb-4">Citizens Charter</h1>
-            <div class="h-[80vh] border rounded shadow overflow-hidden">
-                <iframe src="assets/citizens-charter.pdf" width="100%" height="100%" class="w-full h-full"></iframe>
-            </div>
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Download Forms</h1>
+
+            <!-- Forms List -->
+            <div id="formsList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
     </div>
 
     <script>
+        // Sample forms array
+        const forms = [
+            {
+                title: "Citizens Charter PDF",
+                description: "Complete details about our services and procedures.",
+                file: "assets/citizens-charter.pdf"
+            },
+            {
+                title: "DMMMSU-CGS-F001 Application for Admission to the College Graduate Studies",
+                description: "Form required for new student admissions.",
+                file: "assets/forms/DMMMSU-CGS-F001 Application for Admission to the College Graduate Studies (9) (1).docx"
+            },
+            {
+                title: "DMMMSU-CGS-F002 Registration Form",
+                description: "Form needed for course registration.",
+                file: "assets/forms/DMMMSU-CGS-F002 Registration Form.docx"
+            },
+            {
+                title: "DMMMSU-CGS-F003 Academic Review and Validation Form",
+                description: "Form for academic review and validation.",
+                file: "assets/forms/DMMMSU-CGS-F003 Academic Review and Validation Form.docx"
+            },
+            {
+                title: "DMMMSU-CGS-F005 Student Record Form",
+                description: "Form to update student records.",
+                file: "assets/forms/DMMMSU-CGS-F005 Student Record Form (1) (1).docx"
+            },
+            {
+                title: "DMMMSU-CGS-F006 Clearance and Permit to Take Special Examination",
+                description: "Form for special examination clearance.",
+                file: "assets/forms/DMMMSU-CGS-F006 Clearance and Permit to Take Special Examination (1) (1).docx"
+            },
+            {
+                title: "DMMMSU-CGS-F007 Request for Official Document and Clearance Form",
+                description: "Form for requesting official documents and clearances.",
+                file: "assets/forms/DMMMSU-CGS-F007 Request for Official Document and Clearance Form.docx"
+            },
+            {
+                title: "DMMMSU-CGS-F008 Application for Graduation",
+                description: "Form for graduation application.",
+                file: "assets/forms/DMMMSU-CGS-F008 Application for Graduation (2).docx"
+            },
+            {
+                title: "DMMMSU-CGS-F009 Examination Clearance and Permit",
+                description: "Form required for examination clearance and permit.",
+                file: "assets/forms/DMMMSU-CGS-F009 Examination Clearance and Permit.docx"
+            },
+            {
+                title: "DMMMSU-CGS-F010 Adding_Changing_Dropping of Subjects",
+                description: "Form for adding, changing, or dropping subjects.",
+                file: "assets/forms/DMMMSU-CGS-F010 Adding_Changing_Dropping of Subjects (2).docx"
+            }
+        ];
+
+        // Render forms
+        const formsListEl = document.getElementById("formsList");
+        forms.forEach(form => {
+            const formCard = document.createElement("div");
+            formCard.className = "bg-gray-50 p-5 rounded-lg shadow border hover:shadow-md transition";
+            formCard.innerHTML = `
+                <h2 class="text-lg font-semibold text-gray-900">${form.title}</h2>
+                <p class="text-sm text-gray-600 mt-1 mb-3">${form.description}</p>
+                <a href="${form.file}" download class="inline-block px-4 py-2 bg-indigo-600 text-white text-sm rounded hover:bg-indigo-500 transition">Download</a>
+            `;
+            formsListEl.appendChild(formCard);
+        });
+
+        // Display user email
         const user = JSON.parse(localStorage.getItem('user'));
         document.getElementById('userEmail').textContent = user?.email || 'User';
     </script>

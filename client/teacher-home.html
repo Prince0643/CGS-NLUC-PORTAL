@@ -112,7 +112,6 @@
                             <div className="p-5 text-2xl font-bold border-b border-indigo-500">CGS Portal</div>
                             <ul className="flex-1 mt-4 space-y-1 px-4">
                                 <li><a href="teacher-home.html" className="block py-2 px-3 rounded bg-indigo-600">Home</a></li>
-                                <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-600">Student Grades</a></li>
                                 <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-600">Settings</a></li>
                             </ul>
                             <div className="p-4 border-t border-indigo-600 text-sm">
@@ -138,8 +137,8 @@
                                         <button
                                             key={code}
                                             className={`px-4 py-1 rounded border ${activeCourse === code
-                                                    ? 'bg-indigo-600 text-white'
-                                                    : 'bg-white text-indigo-600 border-indigo-600 hover:bg-indigo-100'
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-white text-indigo-600 border-indigo-600 hover:bg-indigo-100'
                                                 }`}
                                             onClick={() => setActiveCourse(code)}
                                         >
@@ -168,7 +167,28 @@
                                                         <td className="p-2 border">{s.student_email}</td>
                                                         <td className="p-2 border">{s.grade ?? 'N/A'}</td>
                                                         <td className="p-2 border">
-                                                            <button className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
+                                                            <button
+                                                                onClick={() => {
+                                                                    const grade = prompt(`Enter grade for ${s.student_name}:`, s.grade || '');
+                                                                    if (grade) {
+                                                                        fetch('http://localhost:5000/api/teacher/grades', {
+                                                                            method: 'POST',
+                                                                            headers: { 'Content-Type': 'application/json' },
+                                                                            body: JSON.stringify({ enrollment_id: s.enrollment_id, grade })
+                                                                        })
+                                                                            .then(res => res.json())
+                                                                            .then(data => {
+                                                                                if (data.success) {
+                                                                                    alert('Grade saved successfully.');
+                                                                                    fetchStudents(facultyId); // reload list
+                                                                                } else {
+                                                                                    alert('Failed to save grade.');
+                                                                                }
+                                                                            });
+                                                                    }
+                                                                }}
+                                                                className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                                            >
                                                                 Post Grade
                                                             </button>
                                                         </td>

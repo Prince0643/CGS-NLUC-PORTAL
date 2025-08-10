@@ -29,6 +29,7 @@
                 if (!storedUser) return (window.location.href = 'index.html');
                 setUser(storedUser);
                 fetchEnrollmentSummary(storedUser.id);
+                fetchLatestAnnouncement();
                 setIsLoading(false);
             }, []);
 
@@ -53,6 +54,20 @@
                     }
                 } catch (error) {
                     console.error('Failed to fetch enrollment summary:', error);
+                }
+            };
+
+            const [latestAnnouncement, setLatestAnnouncement] = useState(null);
+
+            const fetchLatestAnnouncement = async () => {
+                try {
+                    const res = await fetch('http://localhost:5000/api/announcements');
+                    const data = await res.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        setLatestAnnouncement(data[0]); // only keep the latest
+                    }
+                } catch (err) {
+                    console.error('Failed to load latest announcement:', err);
                 }
             };
 
@@ -86,7 +101,7 @@
                                 <li><a href="home.html" className="block py-2 px-3 rounded bg-indigo-600">Home</a></li>
                                 <li><a href="enrollment.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Enrollment</a></li>
                                 <li><a href="checklist.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Checklist</a></li>
-                                <li><a href="citizens-charter.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Citizens Charter</a></li>
+                                <li><a href="citizens-charter.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Downloads</a></li>
                                 <li><a href="chatbot.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Chatbot</a></li>
                                 <li><a href="settings.html" className="block py-2 px-3 rounded hover:bg-indigo-600">Settings</a></li>
                             </ul>
@@ -112,17 +127,37 @@
                                 </div>
 
                                 <div className="bg-white rounded-lg shadow p-6">
-                                    <h2 className="text-xl font-semibold mb-4">Announcements</h2>
-                                    <p className="text-gray-600">No announcements yet.</p>
+                                    <h2 className="text-xl font-semibold mb-4 text-black-700">Latest Announcement</h2>
+                                    {latestAnnouncement ? (
+                                        <div className="p-4 bg-indigo-50 rounded-lg shadow-sm">
+                                            <h3 className="text-lg font-bold text-indigo-700">{latestAnnouncement.title}</h3>
+                                            <p className="text-gray-700 mt-1">{latestAnnouncement.message}</p>
+                                            <p className="text-xs text-gray-500 mt-2">
+                                                Posted on: {new Date(latestAnnouncement.created_at).toLocaleString()}
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-600">No announcements yet.</p>
+                                    )}
                                 </div>
+
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="bg-white rounded-lg shadow p-6">
-                                    <h2 className="text-xl font-semibold mb-4">Enrollment Details</h2>
-                                    <p><strong>Subjects Enrolled:</strong> {subjects}</p>
-                                    <p><strong>Units Enrolled:</strong> {units}</p>
+                                    <h2 className="text-xl font-semibold mb-4 text-black-700">Enrollment Details</h2>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="p-4 bg-indigo-50 rounded-lg text-center shadow-sm">
+                                            <p className="text-3xl font-bold text-indigo-700">{subjects}</p>
+                                            <p className="text-gray-600 text-sm">Subjects Enrolled</p>
+                                        </div>
+                                        <div className="p-4 bg-indigo-50 rounded-lg text-center shadow-sm">
+                                            <p className="text-3xl font-bold text-indigo-700">{units}</p>
+                                            <p className="text-gray-600 text-sm">Units Enrolled</p>
+                                        </div>
+                                    </div>
                                 </div>
+
 
                                 <div className="bg-white rounded-lg shadow p-6">
                                     <h2 className="text-xl font-semibold mb-4">Academic Calendar</h2>

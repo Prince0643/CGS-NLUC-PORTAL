@@ -100,21 +100,20 @@
                             <li><a href="facultyAdmin.html" className="block py-2 px-3 rounded bg-indigo-700">Faculty</a></li>
                             <li><a href="#" className="block py-2 px-3 rounded hover:bg-indigo-700 transition">Settings</a></li>
                         </ul>
-                        <div className="p-4 border-t border-indigo-700 text-sm">
-                            Logged in as: <span className="font-semibold">{user?.email}</span>
-                            <br />
-                            <button
-                                onClick={handleLogout}
-                                className="mt-2 text-red-300 hover:text-red-100 underline"
-                            >
-                                Logout
-                            </button>
-                        </div>
                     </div>
 
                     {/* Main content */}
                     <div className="flex-1 bg-gray-100 p-6">
-                        <h1 className="text-3xl font-bold mb-6 text-indigo-700">Faculty Account Manager</h1>
+
+                        <div className="flex justify-between items-center mb-4">
+                            <h1 className="text-3xl font-bold mb-6 text-black-700">Faculty Account Manager</h1>
+                            <button
+                                onClick={handleLogout}
+                                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+                            >
+                                Logout
+                            </button>
+                        </div>
 
                         <form onSubmit={handleCreateAccount} className="bg-white p-6 rounded shadow mb-8 max-w-full">
                             <h2 className="text-xl font-semibold mb-4">Create New Faculty Account</h2>

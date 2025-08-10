@@ -617,28 +617,29 @@ app.delete('/api/student-courses/delete/:student_id', async (req, res) => {
 // Check if a user is enrolled in any courses (enrollment.html)
 app.get('/api/enrollment/:userId', async (req, res) => {
     const { userId } = req.params;
-
     try {
-        const [enrollments] = await pool.query(
-            `SELECT 
-                e.*, 
-                c.course_code, 
-                c.course_description, 
-                c.units
-             FROM enrollments e
-             JOIN courses c ON e.course_id = c.course_id
-             WHERE e.student_id = ?`,
-            [userId]
-        );
+        const [rows] = await pool.query(`
+            SELECT 
+                e.enrollment_id,
+                c.course_code,
+                c.course_description,
+                c.units,
+                g.grade
+            FROM enrollments e
+            JOIN courses c ON e.course_id = c.course_id
+            LEFT JOIN grades g ON e.enrollment_id = g.enrollment_id
+            WHERE e.student_id = ?
+            ORDER BY c.course_code ASC
+        `, [userId]);
 
-        if (enrollments.length === 0) {
-            return res.json({ enrolled: false });
-        }
-
-        res.json({ enrolled: true, data: enrollments });
+        // Keep your original shape { enrolled, data } if you want
+        res.json({
+            enrolled: true,
+            data: rows
+        });
     } catch (err) {
-        console.error('Fetch enrollment error:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        console.error('Error fetching enrollment checklist:', err);
+        res.status(500).json({ error: 'Database error' });
     }
 });
 
@@ -684,27 +685,50 @@ app.get('/api/teacher/students/:facultyId', async (req, res) => {
     try {
         const [rows] = await pool.query(`
             SELECT 
+                e.enrollment_id,
                 e.student_id,
                 u.full_name AS student_name,
                 u.email AS student_email,
                 c.course_code,
                 c.course_description,
-                MAX(g.grade) AS grade
+                g.grade
             FROM course_faculty cf
             JOIN courses c ON cf.course_id = c.course_id
             JOIN enrollments e ON c.course_id = e.course_id
             JOIN users u ON e.student_id = u.id
             LEFT JOIN grades g ON e.enrollment_id = g.enrollment_id
             WHERE cf.faculty_id = ?
-            GROUP BY e.student_id, c.course_id
+            GROUP BY e.enrollment_id
         `, [facultyId]);
 
         res.json(rows);
     } catch (err) {
         console.error('Error fetching students:', err);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Database error' });
     }
 });
+
+app.post('/api/teacher/grades', async (req, res) => {
+    const { enrollment_id, grade } = req.body;
+    if (!enrollment_id || !grade) {
+        return res.status(400).json({ success: false, message: 'Missing data' });
+    }
+
+    try {
+        // Check if grade exists
+        const [existing] = await pool.query(`SELECT * FROM grades WHERE enrollment_id = ?`, [enrollment_id]);
+        if (existing.length > 0) {
+            await pool.query(`UPDATE grades SET grade = ? WHERE enrollment_id = ?`, [grade, enrollment_id]);
+        } else {
+            await pool.query(`INSERT INTO grades (enrollment_id, grade) VALUES (?, ?)`, [enrollment_id, grade]);
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Error posting grade:', err);
+        res.status(500).json({ success: false, message: 'Database error' });
+    }
+});
+
 
 app.get('/api/faculty/by-user/:userId', async (req, res) => {
     const { userId } = req.params;
@@ -916,6 +940,59 @@ app.get('/api/dashboard/faculty-load', async (req, res) => {
     } catch (err) {
         console.error('Error fetching faculty load:', err);
         res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// Get latest announcements (admin.html, home.html)
+app.get('/api/announcements', async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT a.*, u.full_name AS author 
+            FROM announcements a
+            LEFT JOIN users u ON a.created_by = u.id
+            ORDER BY a.created_at DESC
+            LIMIT 5
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch announcements' });
+    }
+});
+
+// GET: All announcements
+app.get('/api/announcements', async (req, res) => {
+    try {
+        const [rows] = await pool.query(`
+            SELECT a.*, u.full_name AS author 
+            FROM announcements a
+            LEFT JOIN users u ON a.created_by = u.id
+            ORDER BY a.created_at DESC
+            LIMIT 10
+        `);
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to fetch announcements' });
+    }
+});
+
+// POST: New announcement
+app.post('/api/announcements', async (req, res) => {
+    const { title, message, created_by } = req.body;
+    if (!title || !message || !created_by) {
+        return res.status(400).json({ error: 'Missing fields' });
+    }
+
+    try {
+        await pool.query(
+            'INSERT INTO announcements (title, message, created_by) VALUES (?, ?, ?)',
+            [title, message, created_by]
+        );
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to post announcement' });
     }
 });
 
