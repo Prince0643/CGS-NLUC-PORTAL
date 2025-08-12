@@ -11,20 +11,12 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #004d40 0%, #00796b 100%);
         }
-
+    
         .form-container {
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
                 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .input-field {
-            transition: all 0.3s ease;
-        }
-
-        .input-field:focus {
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.45);
         }
     </style>
 </head>
@@ -116,7 +108,7 @@
                         <p className="text-gray-600 mb-6">Your account has been created successfully.</p>
                         <button
                             onClick={() => window.location.href = 'index.html'}
-                            className="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition duration-200"
+                            className="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition duration-200"
                         >
                             Sign In
                         </button>
@@ -195,14 +187,14 @@
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className={`w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition duration-200 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+                            className={`w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 transition duration-200 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
                         >
                             {isSubmitting ? 'Registering...' : 'Register'}
                         </button>
                     </form>
 
                     <div className="mt-4 text-center text-sm text-gray-600">
-                        Already have an account? <button onClick={() => window.location.href = 'index.html'} className="text-indigo-600 hover:underline">Sign in</button>
+                        Already have an account? <button onClick={() => window.location.href = 'index.html'} className="text-green-600 hover:underline">Sign in</button>
                     </div>
                 </div>
             );

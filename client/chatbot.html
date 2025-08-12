@@ -21,24 +21,24 @@
 
     <div class="flex h-full">
         <!-- Sidebar -->
-        <div class="w-64 bg-indigo-700 text-white flex flex-col">
-            <div class="p-5 text-2xl font-bold border-b border-indigo-500">CGS Portal</div>
-            <ul class="flex-1 mt-4 space-y-1 px-4">
-                <li><a href="home.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Home</a></li>
-                <li><a href="enrollment.html"
-                        class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Enrollment</a></li>
-                <li><a href="checklist.html"
-                        class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Checklist</a></li>
-                <li><a href="citizens-charter.html"
-                        class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Downloads</a></li>
-                <li><a href="chatbot.html" class="block py-2 px-3 rounded bg-indigo-600 transition">Chatbot</a></li>
-                <li><a href="settings.html" class="block py-2 px-3 rounded hover:bg-indigo-600 transition">Settings</a>
-                </li>
-            </ul>
-            <div class="p-4 border-t border-indigo-600 text-sm">
-                Logged in as: <span class="font-semibold" id="userEmail">User</span>
+        <aside class="w-64 bg-gradient-to-b from-green-800 to-emerald-700 text-white flex-shrink-0 flex flex-col">
+            <div class="flex flex-col items-center p-5 border-b border-green-600">
+                <img src="assets/images/dmmmsu-logo.png" alt="CGS Logo" class="w-28 h-28 mb-2" />
+                <div class="text-2xl font-bold">CGS Portal</div>
             </div>
-        </div>
+            <ul class="flex-1 mt-4 space-y-1 px-4">
+                <li><a href="home.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Home</a></li>
+                <li><a href="enrollment.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Enrollment</a></li>
+                <li><a href="checklist.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Checklist</a></li>
+                <li><a href="citizens-charter.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Downloads</a>
+                </li>
+                <li><a href="chatbot.html" class="block py-2 px-3 rounded bg-green-700 ">Chatbot</a></li>
+                <li><a href="settings.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Settings</a></li>
+            </ul>
+            <div class="p-4 border-t border-green-600 text-sm">
+                Logged in as: <span id="loggedInUser" class="font-semibold">Loading...</span>
+            </div>
+        </aside>
 
         <!-- Main Chat Interface -->
         <div class="flex-1 flex flex-col">
@@ -55,7 +55,7 @@
                     <input id="chatInput" type="text" placeholder="Type a message..."
                         class="flex-1 border px-4 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-400" />
                     <button onclick="sendMessage()"
-                        class="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition">Send</button>
+                        class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 transition">Send</button>
                 </div>
 
                 <!-- Suggestions -->
