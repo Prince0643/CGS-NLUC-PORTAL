@@ -35,7 +35,13 @@
 
             const fetchLogs = async () => {
                 try {
-                    const res = await fetch('http://localhost:5000/api/admin/logs');
+                    const token = localStorage.getItem('authToken');
+                    const res = await fetch('http://localhost:5000/api/admin/logs', {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (!res.ok) throw new Error(await res.text());
                     const data = await res.json();
                     setLogs(data);
                 } catch (err) {
@@ -45,17 +51,10 @@
                 }
             };
 
-            const handleBackup = async () => {
-                try {
-                    const res = await fetch('http://localhost:5000/api/admin/backup');
-                    const data = await res.json();
-                    if (!data.success) {
-                        alert(`Backup failed: ${data.message}`);
-                    }
-                } catch (err) {
-                    alert(`Backup error: ${err.message}`);
-                }
+            const handleBackup = () => {
+                window.location.href = 'http://localhost:5000/api/admin/backup';
             };
+
 
 
             const handleRestore = async (e) => {
@@ -85,22 +84,37 @@
             return (
                 <div className="flex min-h-screen">
                     {/* Sidebar */}
-                    <div className="w-64 bg-indigo-800 text-white flex flex-col">
-                        <div className="p-5 text-2xl font-bold border-b border-indigo-600">CGS Admin Panel</div>
+                    <div className="w-64 bg-gradient-to-b from-green-800 to-emerald-700 text-white flex flex-col">
+                        <div className="flex flex-col items-center p-5 border-b border-green-600">
+                            <img src="assets/images/dmmmsu-logo.png" alt="CGS Logo" className="w-28 h-28 mb-2" />
+                            <div className="text-2xl font-bold">CGS Admin Panel</div>
+                        </div>
                         <ul className="flex-1 mt-4 space-y-1 px-4">
-                            <li><a href="admin.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Dashboard</a></li>
-                            <li><a href="programs.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Programs</a></li>
-                            <li><a href="students.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Students</a></li>
-                            <li><a href="chatbotAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Chatbot</a></li>
-                            <li><a href="facultyAdmin.html" className="block py-2 px-3 rounded hover:bg-indigo-700">Faculty</a></li>
-                            <li><a href="adminSettings.html" className="block py-2 px-3 rounded bg-indigo-700">Settings</a></li>
+                            <li><a href="admin.html" className="block py-2 px-3 rounded hover:bg-green-700">Dashboard</a></li>
+                            <li><a href="programs.html" className="block py-2 px-3 rounded hover:bg-green-700">Programs</a></li>
+                            <li><a href="students.html" className="block py-2 px-3 rounded hover:bg-green-700">Students</a></li>
+                            <li><a href="chatbotAdmin.html" className="block py-2 px-3 rounded hover:bg-green-700">Chatbot</a></li>
+                            <li><a href="facultyAdmin.html" className="block py-2 px-3 rounded hover:bg-green-700">Faculty</a></li>
+                            <li><a href="adminSettings.html" className="block py-2 px-3 rounded bg-green-700">Settings</a></li>
                         </ul>
-                        <button onClick={handleLogout} className="m-4 bg-red-600 py-2 px-4 rounded hover:bg-red-700">Logout</button>
+                        <div className="p-4 border-t border-green-700 text-sm">
+                            Logged in as: <span className="font-semibold">{user?.email}</span>
+                        </div>
                     </div>
+
 
                     {/* Main Content */}
                     <div className="flex-1 p-6">
-                        <h1 className="text-3xl font-bold mb-6">Admin Settings</h1>
+                        {/* Top Bar with Logout */}
+                        <div className="flex justify-between items-center mb-6">
+                            <h1 className="text-3xl font-bold">Admin Settings</h1>
+                            <button
+                                onClick={handleLogout}
+                                className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700"
+                            >
+                                Logout
+                            </button>
+                        </div>
 
                         {/* Logs */}
                         <div className="bg-white p-4 rounded shadow mb-6">
@@ -127,13 +141,23 @@
                         {/* Backup */}
                         <div className="bg-white p-4 rounded shadow mb-6">
                             <h2 className="text-xl font-semibold mb-4">💾 Backup Data</h2>
-                            <button onClick={handleBackup} className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">Download Backup</button>
+                            <button
+                                onClick={handleBackup}
+                                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                            >
+                                Download Backup
+                            </button>
                         </div>
 
                         {/* Restore */}
                         <div className="bg-white p-4 rounded shadow">
                             <h2 className="text-xl font-semibold mb-4">♻️ Restore Data</h2>
-                            <input type="file" accept=".sql" onChange={handleRestore} className="border p-2 rounded" />
+                            <input
+                                type="file"
+                                accept=".sql"
+                                onChange={handleRestore}
+                                className="border p-2 rounded"
+                            />
                         </div>
                     </div>
                 </div>

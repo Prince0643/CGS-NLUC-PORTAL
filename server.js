@@ -1,22 +1,35 @@
+const { spawn, exec } = require('child_process');
 const path = require('path');
-
-// server.js - CGS Registration Backend
+const fs = require('fs');
+const multer = require('multer'); // <-- add this
 const express = require('express');
 const mysql = require('mysql2/promise');
 const bodyParser = require('body-parser');
 const bcrypt = require('bcrypt');
 const cors = require('cors');
-const jwt = require('jsonwebtoken'); // Import JWT for token generation
+const jwt = require('jsonwebtoken');
+
+const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
 const app = express();
 // const PORT = process.env.PORT || 8080;
-
 
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+function authenticateToken(req, res, next) {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) return res.sendStatus(401);
+
+    jwt.verify(token, process.env.JWT_SECRET || 'yoursecret', (err, user) => {
+        if (err) return res.sendStatus(403);
+        req.user = user;
+        next();
+    });
+}
 
 // Database configuration
 const dbConfig = {
@@ -51,6 +64,17 @@ async function testConnection() {
     }
 }
 
+async function addLog(userId, action, details) {
+    try {
+        await pool.query(
+            'INSERT INTO logs (user_id, action, details) VALUES (?, ?, ?)',
+            [userId || null, action, details]
+        );
+    } catch (err) {
+        console.error('Error inserting log:', err);
+    }
+}
+
 // Login endpoint (index.html)
 app.post('/api/login', async (req, res) => {
     try {
@@ -73,6 +97,7 @@ app.post('/api/login', async (req, res) => {
 
         const token = jwt.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
 
+
         res.json({
             message: 'Login successful',
             token,
@@ -85,6 +110,8 @@ app.post('/api/login', async (req, res) => {
                 enrollment_status: user.enrollment_status
             }
         });
+
+        await addLog(user.id, 'Login', `User ${user.email} logged in`);
 
     } catch (error) {
         console.error('Login error:', error);
@@ -165,6 +192,8 @@ app.patch('/api/courses/:id/status', async (req, res) => {
         console.error('Error updating course status:', error);
         res.status(500).json({ error: 'Failed to update course status.' });
     }
+
+    await addLog(req.user.id, 'Course Status Update', `Set course ${req.params.id} to ${req.body.status}`);
 });
 
 // Registration endpoint (registration.html)
@@ -205,6 +234,8 @@ app.post('/api/register', async (req, res) => {
         console.error('Registration error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
+
+    await addLog(req.user.id, 'Enrollment', `Enrolled in ${selectedCourses.length} courses`);
 });
 
 
@@ -375,6 +406,8 @@ app.post('/api/chatbot/add', async (req, res) => {
         console.error(err);
         res.status(500).json({ error: 'Insert failed' });
     }
+
+    await addLog(req.user.id, 'Chatbot Entry Added', `Keyword: ${req.body.keyword}`);
 });
 
 // Get all responses (chatbotAdmin.html)
@@ -408,6 +441,8 @@ app.delete('/api/chatbot/delete/:id', async (req, res) => {
         console.error(err);
         res.status(500).json({ error: 'Delete failed' });
     }
+
+    await addLog(req.user.id, 'Chatbot Entry Deleted', `Deleted response ID ${req.params.id}`);
 });
 
 // Get all students (students.html)
@@ -572,6 +607,8 @@ app.post('/api/student-courses/enroll', async (req, res) => {
     } finally {
         connection.release();
     }
+
+    await addLog(req.user.id, 'Enrollment', `Enrolled in ${selectedCourses.length} courses`);
 });
 
 // (enrollment.html)
@@ -611,6 +648,8 @@ app.delete('/api/student-courses/delete/:student_id', async (req, res) => {
     } finally {
         connection.release();
     }
+
+    await addLog(req.user.id, 'Enrollment Deletion', `Deleted all enrollments for student ${req.params.student_id}`);
 });
 
 
@@ -776,6 +815,8 @@ app.post('/api/admin/end-term', async (req, res) => {
     } finally {
         connection.release();
     }
+
+    await addLog(req.user.id, 'End Term', 'Reset all offered courses');
 });
 
 // ✅ Undo endpoint
@@ -804,6 +845,8 @@ app.post('/api/admin/undo-end-term', async (req, res) => {
     } finally {
         connection.release();
     }
+
+    await addLog(req.user.id, 'Undo End Term', 'Restored previous course offerings');
 });
 
 // Utility: Validate schedule format (e.g. 8-12S or 5:30-7:30F)
@@ -867,6 +910,8 @@ app.post('/api/courses/:courseId/schedule-faculty', async (req, res) => {
     } finally {
         connection.release();
     }
+
+    await addLog(req.user.id, 'Schedule/Faculty Assignment', `Assigned schedule ${req.body.schedule} and faculty ${req.body.facultyName} to course ${req.params.courseId}`);
 });
 
 // Get all faculty with linked email (for facultyAdmin.html)
@@ -924,6 +969,8 @@ app.post('/api/faculty/create-account', async (req, res) => {
     } finally {
         connection.release();
     }
+
+    await addLog(req.user.id, 'Faculty Created', `Created faculty account for ${req.body.full_name}`);
 });
 
 // (admin.html)
@@ -993,6 +1040,95 @@ app.post('/api/announcements', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to post announcement' });
+    }
+});
+
+app.get('/api/admin/backup', (req, res) => {
+    const dbUser = 'root';
+    const dbPass = '';
+    const dbName = 'cgs';
+    const mysqldumpPath = 'D:\\xampp\\mysql\\bin\\mysqldump.exe';
+
+    res.setHeader('Content-Disposition', `attachment; filename="cgs_backup_${Date.now()}.sql"`);
+    res.setHeader('Content-Type', 'application/sql');
+
+    let args = [];
+    if (dbPass) {
+        args = [`-u${dbUser}`, `-p${dbPass}`, dbName];
+    } else {
+        args = [`-u${dbUser}`, dbName];
+    }
+
+    const dumpProcess = spawn(mysqldumpPath, args);
+
+    dumpProcess.stdout.pipe(res);
+
+    dumpProcess.stderr.on('data', (data) => {
+        console.error(`mysqldump error: ${data}`);
+    });
+
+    dumpProcess.on('error', (err) => {
+        console.error('Failed to start mysqldump:', err);
+        res.status(500).end('Backup failed.');
+    });
+});
+
+
+app.post('/api/admin/restore', upload.single('backup'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    const dbUser = 'root';
+    const dbPass = '';
+    const dbName = 'cgs';
+    const mysqlPath = 'D:\\xampp\\mysql\\bin\\mysql.exe';
+    const backupFile = req.file.path;
+
+    let restoreCmd = '';
+    if (dbPass) {
+        restoreCmd = `"${mysqlPath}" -u${dbUser} -p${dbPass} ${dbName} < "${backupFile}"`;
+    } else {
+        restoreCmd = `"${mysqlPath}" -u${dbUser} ${dbName} < "${backupFile}"`;
+    }
+
+    exec(restoreCmd, (err, stdout, stderr) => {
+        // Remove uploaded file after restore
+        fs.unlinkSync(backupFile);
+
+        if (err) {
+            console.error('Restore error:', stderr);
+            return res.status(500).json({ success: false, message: 'Restore failed' });
+        }
+
+        // Optionally log the restore
+        const userId = req.user?.id || null;
+        const userEmail = req.user?.email || 'Unknown';
+        db.query(
+            'INSERT INTO logs (user_id, user_email, action, details) VALUES (?, ?, ?, ?)',
+            [userId, userEmail, 'Database Restore', 'Database restored from backup file'],
+            (logErr) => {
+                if (logErr) console.error('Failed to log restore:', logErr);
+            }
+        );
+
+        res.json({ success: true, message: 'Database restored successfully.' });
+    });
+});
+
+app.get('/api/admin/logs', async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            `SELECT l.id, l.action, l.details, l.created_at, u.email AS user_email
+             FROM logs l
+             LEFT JOIN users u ON l.user_id = u.id
+             ORDER BY l.created_at DESC
+             LIMIT 100`
+        );
+        res.json(rows);
+    } catch (err) {
+        console.error('Error fetching logs:', err);
+        res.status(500).json({ message: 'Error fetching logs.' });
     }
 });
 
