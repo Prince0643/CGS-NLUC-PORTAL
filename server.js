@@ -992,6 +992,7 @@ app.post('/api/faculty/create-account', async (req, res) => {
     }
 });
 
+
 // (admin.html)
 app.get('/api/dashboard/faculty-load', async (req, res) => {
     try {
