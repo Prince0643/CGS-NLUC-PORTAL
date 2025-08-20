@@ -941,11 +941,16 @@ app.post('/api/faculty/create-account', async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        const [existing] = await connection.query(`SELECT * FROM users WHERE email = ?`, [email]);
+        // Check for existing user with same email
+        const [existing] = await connection.query(
+            `SELECT * FROM users WHERE email = ?`, 
+            [email]
+        );
         if (existing.length) {
             return res.status(400).json({ error: 'Email already exists' });
         }
 
+        // Create user
         const hashed = await bcrypt.hash(password, 10);
         const [userResult] = await connection.query(
             `INSERT INTO users (full_name, email, password, user_level) VALUES (?, ?, ?, 'teacher')`,
@@ -953,15 +958,31 @@ app.post('/api/faculty/create-account', async (req, res) => {
         );
         const userId = userResult.insertId;
 
-        const [faculties] = await connection.query(`SELECT faculty_id FROM faculty WHERE name = ?`, [name]);
+        // Link or insert faculty record
+        const [faculties] = await connection.query(
+            `SELECT faculty_id FROM faculty WHERE name = ?`, 
+            [name]
+        );
         if (faculties.length) {
-            await connection.query(`UPDATE faculty SET user_id = ? WHERE name = ?`, [userId, name]);
+            await connection.query(
+                `UPDATE faculty SET user_id = ? WHERE name = ?`, 
+                [userId, name]
+            );
         } else {
-            await connection.query(`INSERT INTO faculty (name, user_id) VALUES (?, ?)`, [name, userId]);
+            await connection.query(
+                `INSERT INTO faculty (name, user_id) VALUES (?, ?)`, 
+                [name, userId]
+            );
         }
 
         await connection.commit();
+
+        // Success response
         res.json({ message: 'Faculty user created and linked.' });
+
+        // Log action (after response to avoid blocking)
+        addLog(req.user.id, 'Faculty Created', `Created faculty account for ${name}`);
+
     } catch (err) {
         await connection.rollback();
         console.error('Create faculty error:', err);
@@ -969,8 +990,6 @@ app.post('/api/faculty/create-account', async (req, res) => {
     } finally {
         connection.release();
     }
-
-    await addLog(req.user.id, 'Faculty Created', `Created faculty account for ${req.body.full_name}`);
 });
 
 // (admin.html)
