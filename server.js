@@ -659,16 +659,17 @@ app.get('/api/enrollment/:userId', async (req, res) => {
     try {
         const [rows] = await pool.query(`
             SELECT 
-                e.enrollment_id,
-                c.course_code,
-                c.course_description,
-                c.units,
-                g.grade
-            FROM enrollments e
-            JOIN courses c ON e.course_id = c.course_id
-            LEFT JOIN grades g ON e.enrollment_id = g.enrollment_id
-            WHERE e.student_id = ?
-            ORDER BY c.course_code ASC
+  c.course_code,
+  c.course_description,
+  c.units,
+  g.grade,
+  g.academic_year,
+  g.term
+FROM enrollments e
+JOIN courses c ON e.course_id = c.course_id
+LEFT JOIN grades g ON e.enrollment_id = g.enrollment_id
+WHERE e.student_id = ?;
+
         `, [userId]);
 
         // Keep your original shape { enrolled, data } if you want
@@ -754,20 +755,52 @@ app.post('/api/teacher/grades', async (req, res) => {
     }
 
     try {
-        // Check if grade exists
-        const [existing] = await pool.query(`SELECT * FROM grades WHERE enrollment_id = ?`, [enrollment_id]);
-        if (existing.length > 0) {
-            await pool.query(`UPDATE grades SET grade = ? WHERE enrollment_id = ?`, [grade, enrollment_id]);
-        } else {
-            await pool.query(`INSERT INTO grades (enrollment_id, grade) VALUES (?, ?)`, [enrollment_id, grade]);
+        // Get student name from enrollment + users
+        const [enrollment] = await pool.query(
+            `SELECT u.full_name AS student_name
+             FROM enrollments e
+             JOIN users u ON e.student_id = u.id
+             WHERE e.enrollment_id = ?`,
+            [enrollment_id]
+        );
+
+        if (enrollment.length === 0) {
+            return res.status(404).json({ success: false, message: 'Enrollment not found' });
         }
+
+        const { student_name } = enrollment[0];
+
+        // ✅ define current AY + term (or fetch from config table if you have one)
+        const academic_year = "2024-2025";
+        const term = "1st Semester";
+
+        // Check if grade already exists
+        const [existing] = await pool.query(
+            `SELECT * FROM grades WHERE enrollment_id = ?`,
+            [enrollment_id]
+        );
+
+        if (existing.length > 0) {
+            await pool.query(
+                `UPDATE grades 
+                 SET grade = ?, academic_year = ?, term = ?, student_name = ?
+                 WHERE enrollment_id = ?`,
+                [grade, academic_year, term, student_name, enrollment_id]
+            );
+        } else {
+            await pool.query(
+                `INSERT INTO grades (enrollment_id, student_name, academic_year, term, grade) 
+                 VALUES (?, ?, ?, ?, ?)`,
+                [enrollment_id, student_name, academic_year, term, grade]
+            );
+        }
+
         res.json({ success: true });
     } catch (err) {
         console.error('Error posting grade:', err);
         res.status(500).json({ success: false, message: 'Database error' });
     }
 });
-
 
 app.get('/api/faculty/by-user/:userId', async (req, res) => {
     const { userId } = req.params;
@@ -943,7 +976,7 @@ app.post('/api/faculty/create-account', async (req, res) => {
 
         // Check for existing user with same email
         const [existing] = await connection.query(
-            `SELECT * FROM users WHERE email = ?`, 
+            `SELECT * FROM users WHERE email = ?`,
             [email]
         );
         if (existing.length) {
@@ -960,17 +993,17 @@ app.post('/api/faculty/create-account', async (req, res) => {
 
         // Link or insert faculty record
         const [faculties] = await connection.query(
-            `SELECT faculty_id FROM faculty WHERE name = ?`, 
+            `SELECT faculty_id FROM faculty WHERE name = ?`,
             [name]
         );
         if (faculties.length) {
             await connection.query(
-                `UPDATE faculty SET user_id = ? WHERE name = ?`, 
+                `UPDATE faculty SET user_id = ? WHERE name = ?`,
                 [userId, name]
             );
         } else {
             await connection.query(
-                `INSERT INTO faculty (name, user_id) VALUES (?, ?)`, 
+                `INSERT INTO faculty (name, user_id) VALUES (?, ?)`,
                 [name, userId]
             );
         }
@@ -981,7 +1014,7 @@ app.post('/api/faculty/create-account', async (req, res) => {
         res.json({ message: 'Faculty user created and linked.' });
 
         // Log action (after response to avoid blocking)
-        await addLog(null, 'Faculty', `Created faculty account for ${name}`);
+        addLog(null, 'Faculty Created', `Created faculty account for ${name}`);
 
     } catch (err) {
         await connection.rollback();
@@ -991,7 +1024,6 @@ app.post('/api/faculty/create-account', async (req, res) => {
         connection.release();
     }
 });
-
 
 // (admin.html)
 app.get('/api/dashboard/faculty-load', async (req, res) => {
@@ -1102,7 +1134,7 @@ app.post('/api/admin/restore', upload.single('backup'), (req, res) => {
     const dbUser = 'root';
     const dbPass = '';
     const dbName = 'cgs';
-    const mysqlPath = 'X:\\xampp\\mysql\\bin\\mysqldump.exe';
+    const mysqlPath = 'X:\\xampp\\mysql\\bin\\mysql.exe';
     const backupFile = req.file.path;
 
     let restoreCmd = '';

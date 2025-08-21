@@ -9,6 +9,50 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media print {
+      body * {
+        visibility: hidden;
+        /* Hide everything */
+      }
+
+      #completedCourses,
+      #completedCourses * {
+        visibility: visible;
+        /* Show only completed courses */
+      }
+
+      #completedCourses {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+      }
+
+      /* Excel-like table formatting */
+      #completedCourses table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        font-size: 12pt !important;
+      }
+
+      #completedCourses th,
+      #completedCourses td {
+        border: 1px solid black !important;
+        padding: 6px !important;
+        text-align: center !important;
+      }
+
+      /* Remove modal/card look */
+      #completedCourses h2 {
+        display: none;
+        /* Hide title "✅ Completed Courses" */
+      }
+    }
+  </style>
 </head>
 
 <body class="bg-gray-100 min-h-screen">
@@ -23,9 +67,13 @@
       const [sidebarOpen, setSidebarOpen] = useState(false);
       const [checklist, setChecklist] = useState({ enrolled: [], completed: [] });
 
+      // New states for filtering
+      const [selectedAY, setSelectedAY] = useState("");
+      const [selectedTerm, setSelectedTerm] = useState("");
+
       useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        if (!storedUser) return (window.location.href = 'index.html');
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        if (!storedUser) return (window.location.href = "index.html");
         setUser(storedUser);
 
         fetchChecklist(storedUser.id, storedUser.program_id);
@@ -48,19 +96,41 @@
           }
 
           setChecklist({ enrolled: enrolledOnly, completed });
+
+          // Pre-select most recent AY/Term
+          if (completed.length > 0) {
+            setSelectedAY(completed[0].academic_year || "");
+            setSelectedTerm(completed[0].term || "");
+          }
         } catch (err) {
-          console.error('Checklist fetch failed:', err);
+          console.error("Checklist fetch failed:", err);
         }
       };
 
       const handleLogout = () => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        window.location.href = 'index.html';
+        localStorage.removeItem("authToken");
+        localStorage.removeItem("user");
+        window.location.href = "index.html";
       };
 
+      const handlePrint = () => {
+        window.print();
+      };
+
+      // Filter completed courses by AY & Term
+      const filteredCompleted = checklist.completed.filter(course => {
+        return (
+          (!selectedAY || course.academic_year === selectedAY) &&
+          (!selectedTerm || course.term === selectedTerm)
+        );
+      });
+
       if (isLoading) {
-        return <div className="flex justify-center items-center h-screen"><div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-indigo-500 rounded-full"></div></div>;
+        return (
+          <div className="flex justify-center items-center h-screen">
+            <div className="animate-spin h-12 w-12 border-t-2 border-b-2 border-indigo-500 rounded-full"></div>
+          </div>
+        );
       }
 
       return (
@@ -69,8 +139,19 @@
           <div className="md:hidden flex justify-between items-center bg-indigo-700 text-white p-4">
             <div className="text-xl font-bold">CGS Portal</div>
             <button onClick={() => setSidebarOpen(!sidebarOpen)}>
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
           </div>
@@ -78,21 +159,20 @@
           {/* Layout */}
           <div className="flex min-h-screen">
             {/* Sidebar */}
-            <aside class="w-64 bg-gradient-to-b from-green-800 to-emerald-700 text-white flex-shrink-0 flex flex-col">
-              <div class="flex flex-col items-center p-5 border-b border-green-600">
-                <img src="assets/images/dmmmsu-logo.png" alt="CGS Logo" class="w-28 h-28 mb-2" />
-                <div class="text-2xl font-bold">CGS Portal</div>
+            <aside className="w-64 bg-gradient-to-b from-green-800 to-emerald-700 text-white flex-shrink-0 flex flex-col">
+              <div className="flex flex-col items-center p-5 border-b border-green-600">
+                <div className="text-2xl font-bold">CGS Portal</div>
               </div>
-              <ul class="flex-1 mt-4 space-y-1 px-4">
-                <li><a href="home.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Home</a></li>
-                <li><a href="enrollment.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Enrollment</a></li>
-                <li><a href="checklist.html" class="block py-2 px-3 rounded bg-green-700">Checklist</a></li>
-                <li><a href="citizens-charter.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Downloads</a></li>
-                <li><a href="chatbot.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Chatbot</a></li>
-                <li><a href="settings.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Settings</a></li>
+              <ul className="flex-1 mt-4 space-y-1 px-4">
+                <li><a href="home.html" className="block py-2 px-3 rounded hover:bg-green-700 transition">Home</a></li>
+                <li><a href="enrollment.html" className="block py-2 px-3 rounded hover:bg-green-700 transition">Enrollment</a></li>
+                <li><a href="checklist.html" className="block py-2 px-3 rounded bg-green-700">Checklist</a></li>
+                <li><a href="citizens-charter.html" className="block py-2 px-3 rounded hover:bg-green-700 transition">Downloads</a></li>
+                <li><a href="chatbot.html" className="block py-2 px-3 rounded hover:bg-green-700 transition">Chatbot</a></li>
+                <li><a href="settings.html" className="block py-2 px-3 rounded hover:bg-green-700 transition">Settings</a></li>
               </ul>
-              <div class="p-4 border-t border-green-600 text-sm">
-                Logged in as: <span id="loggedInUser" class="font-semibold">Loading...</span>
+              <div className="p-4 border-t border-green-600 text-sm">
+                Logged in as: <span id="loggedInUser" className="font-semibold">{user?.email}</span>
               </div>
             </aside>
 
@@ -100,12 +180,51 @@
             <div className="flex-1 bg-gray-100 p-6">
               <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold text-gray-800">Checklist</h1>
-                <button onClick={handleLogout} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">Logout</button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handlePrint}
+                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                  >
+                    Print
+                  </button>
+                  <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition"
+                  >
+                    Logout
+                  </button>
+                </div>
               </div>
 
+              {/* Dropdown Filters */}
+              <div className="flex gap-4 mb-6">
+                <select
+                  value={selectedAY}
+                  onChange={(e) => setSelectedAY(e.target.value)}
+                  className="border rounded px-3 py-2"
+                >
+                  <option value="">All Academic Years</option>
+                  {[...new Set(checklist.completed.map(c => c.academic_year))].map((ay, i) => (
+                    <option key={i} value={ay}>{ay}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={selectedTerm}
+                  onChange={(e) => setSelectedTerm(e.target.value)}
+                  className="border rounded px-3 py-2"
+                >
+                  <option value="">All Terms</option>
+                  {[...new Set(checklist.completed.map(c => c.term))].map((t, i) => (
+                    <option key={i} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sections */}
               <div className="space-y-6">
-                <ChecklistSection title="✅ Completed Courses" data={checklist.completed} />
-                <ChecklistSection title="📘 Enrolled Courses" data={checklist.enrolled} />
+                <ChecklistSection title="✅ Completed Courses" data={filteredCompleted} user={user} />
+                <ChecklistSection title="📘 Enrolled Courses" data={checklist.enrolled} user={user} />
               </div>
             </div>
           </div>
@@ -113,39 +232,103 @@
       );
     }
 
-    function ChecklistSection({ title, data }) {
+    function ChecklistSection({ title, data, user }) {
+      // Build a safe display name from whatever fields exist
+      const displayName =
+        (user && (
+          user.full_name ||
+          user.name ||
+          [user.first_name, user.middle_name, user.last_name].filter(Boolean).join(" ") ||
+          user.email
+        )) || "Student Name";
+
+      // Try multiple field names for program; fall back to the first row's program info if present
+      const programFromRow =
+        (data && data.length > 0 && (
+          data[0].program_name ||
+          data[0].program ||
+          data[0].program_code ||
+          data[0].course
+        )) || null;
+
+      const displayProgram =
+        (user && (
+          user.program_name ||
+          user.program ||
+          user.program_code ||
+          user.course
+        )) || programFromRow || "Program";
+
       return (
-        <div className="bg-white rounded-lg shadow p-4">
+        <div
+          id={title.includes("Completed") ? "completedCourses" : ""}
+          className="bg-white rounded-lg shadow p-4"
+        >
+          {title.includes("Completed") && (
+            <>
+              <div className="print-header">
+                <h3 className="text-center font-bold text-lg">
+                  Don Mariano Marcos Memorial State University
+                </h3>
+                <p className="text-center">Graduate School - Student Grades</p>
+                <br />
+                <p><strong>Name:</strong> {displayName}</p>
+                <p><strong>Program:</strong> {displayProgram}</p>
+              </div>
+            </>
+          )}
+
           <h2 className="text-lg font-semibold mb-2">{title}</h2>
-          {data.length === 0 ? (
+
+          {(!data || data.length === 0) ? (
             <p className="text-sm text-gray-500">No courses listed.</p>
           ) : (
-            <table className="table-auto w-full text-sm">
+            <table className="table-auto w-full text-sm border border-gray-300">
               <thead>
                 <tr className="bg-gray-200">
-                  <th className="px-3 py-2 text-left">Course Code</th>
-                  <th className="px-3 py-2 text-left">Description</th>
-                  <th className="px-3 py-2 text-center">Units</th>
-                  {title.includes('Completed') && <th className="px-3 py-2 text-center">Grade</th>}
+                  <th className="px-3 py-2 border">Course Code</th>
+                  <th className="px-3 py-2 border">Description</th>
+                  <th className="px-3 py-2 border">Units</th>
+                  {title.includes("Completed") && (
+                    <>
+                      <th className="px-3 py-2 border">Grade</th>
+                      <th className="px-3 py-2 border">AY</th>
+                      <th className="px-3 py-2 border">Term</th>
+                    </>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {data.map((course, idx) => (
-                  <tr key={idx} className="border-t">
-                    <td className="px-3 py-1">{course.course_code}</td>
-                    <td className="px-3 py-1">{course.course_description}</td>
-                    <td className="px-3 py-1 text-center">{course.units}</td>
-                    {title.includes('Completed') && <td className="px-3 py-1 text-center">{course.grade}</td>}
+                  <tr key={idx}>
+                    <td className="px-3 py-1 border">{course.course_code}</td>
+                    <td className="px-3 py-1 border">{course.course_description}</td>
+                    <td className="px-3 py-1 border text-center">{course.units}</td>
+                    {title.includes("Completed") && (
+                      <>
+                        <td className="px-3 py-1 border text-center">{course.grade}</td>
+                        <td className="px-3 py-1 border text-center">{course.academic_year}</td>
+                        <td className="px-3 py-1 border text-center">{course.term}</td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>
             </table>
           )}
+
+          {title.includes("Completed") && (
+            <div className="print-footer mt-6 text-sm">
+              <p><em>This is a system-generated copy of your grades.</em></p>
+              <p>Registrar’s Office – CGS Portal</p>
+            </div>
+          )}
         </div>
       );
     }
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
     root.render(<ChecklistPage />);
   </script>
 </body>
