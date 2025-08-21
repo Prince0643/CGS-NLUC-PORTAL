@@ -981,7 +981,7 @@ app.post('/api/faculty/create-account', async (req, res) => {
         res.json({ message: 'Faculty user created and linked.' });
 
         // Log action (after response to avoid blocking)
-        addLog(req.user.id, 'Faculty Created', `Created faculty account for ${name}`);
+        await addLog(null, 'Faculty', `Created faculty account for ${name}`);
 
     } catch (err) {
         await connection.rollback();
@@ -1067,7 +1067,7 @@ app.get('/api/admin/backup', (req, res) => {
     const dbUser = 'root';
     const dbPass = '';
     const dbName = 'cgs';
-    const mysqldumpPath = 'D:\\xampp\\mysql\\bin\\mysqldump.exe';
+    const mysqldumpPath = 'X:\\xampp\\mysql\\bin\\mysqldump.exe';
 
     res.setHeader('Content-Disposition', `attachment; filename="cgs_backup_${Date.now()}.sql"`);
     res.setHeader('Content-Type', 'application/sql');
@@ -1102,7 +1102,7 @@ app.post('/api/admin/restore', upload.single('backup'), (req, res) => {
     const dbUser = 'root';
     const dbPass = '';
     const dbName = 'cgs';
-    const mysqlPath = 'D:\\xampp\\mysql\\bin\\mysql.exe';
+    const mysqlPath = 'X:\\xampp\\mysql\\bin\\mysqldump.exe';
     const backupFile = req.file.path;
 
     let restoreCmd = '';
