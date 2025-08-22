@@ -864,7 +864,7 @@ app.get('/api/teacher/students/:facultyId', async (req, res) => {
         res.status(500).json({ error: 'Database error' });
     }
 });
-
+  
 app.post('/api/teacher/grades', async (req, res) => {
     const { enrollment_id, grade } = req.body;
     if (!enrollment_id || !grade) {
