@@ -49,6 +49,15 @@
             const [currentPage, setCurrentPage] = useState(1);
             const [showModal, setShowModal] = useState(false);
             const [showUndo, setShowUndo] = useState(false);
+            const [showAddModal, setShowAddModal] = useState(false);
+            const [programOptions, setProgramOptions] = useState([]);
+            const [newCourse, setNewCourse] = useState({
+                course_code: '',
+                program_id: '',
+                course_description: '',
+                units: 3,
+                offered: 'offered'
+            });
             const [selectedCourseId, setSelectedCourseId] = useState(null);
             const [scheduleInput, setScheduleInput] = useState('');
             const [facultyInput, setFacultyInput] = useState('');
@@ -72,6 +81,10 @@
                 }
 
                 fetchCourses();
+                fetch('http://localhost:5000/api/programs')
+                    .then(r => r.json())
+                    .then(setProgramOptions)
+                    .catch(() => setProgramOptions([]));
             }, []);
 
             useEffect(() => {
@@ -82,7 +95,7 @@
             const fetchCourses = async () => {
                 try {
                     const [offeredRes, notOfferedRes] = await Promise.all([
-                        fetch('http://localhost:5000/api/courses?status=offered'),
+                        fetch('http://localhost:5000/api/courses/offered-detailed'),
                         fetch('http://localhost:5000/api/courses?status=not offered')
                     ]);
 
@@ -171,7 +184,7 @@
                 const filteredCourses = courses.filter(course =>
                     course.course_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     course.course_description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    course.program_name.toLowerCase().includes(searchTerm.toLowerCase())
+                    (course.program_name || '').toLowerCase().includes(searchTerm.toLowerCase())
                 );
 
                 const totalPages = Math.ceil(filteredCourses.length / rowsPerPage);
@@ -200,6 +213,8 @@
                                         <th className="border p-2">Description</th>
                                         <th className="border p-2">Units</th>
                                         <th className="border p-2">Program</th>
+                                        {activeTab === 'offered' && <th className="border p-2">Schedule</th>}
+                                        {activeTab === 'offered' && <th className="border p-2">Faculty</th>}
                                         <th className="border p-2">Offered Status</th>
                                         {activeTab === 'offered' && <th className="border p-2">Add</th>}
                                     </tr>
@@ -211,6 +226,26 @@
                                             <td className="border p-2">{course.course_description}</td>
                                             <td className="border p-2">{course.units}</td>
                                             <td className="border p-2">{course.program_name}</td>
+                                            {activeTab === 'offered' && (
+                                                <>
+                                                    <td className="border p-2 text-sm">
+                                                        {(course.schedules && course.schedules.length)
+                                                            ? (
+                                                                <div className="flex flex-col items-start gap-1 px-2">
+                                                                    {course.schedules.map((s, idx) => (
+                                                                        <span key={idx} className="inline-block bg-gray-100 rounded px-2 py-0.5">{s}</span>
+                                                                    ))}
+                                                                </div>
+                                                            )
+                                                            : '—'}
+                                                    </td>
+                                                    <td className="border p-2 text-sm">
+                                                        {(course.faculty && course.faculty.length)
+                                                            ? course.faculty.join(', ')
+                                                            : '—'}
+                                                    </td>
+                                                </>
+                                            )}
                                             <td className="border p-2">
                                                 <select
                                                     className="border rounded px-2 py-1"
@@ -273,6 +308,12 @@
                             >
                                 End Term
                             </button>
+                            <button
+                                onClick={() => setShowAddModal(true)}
+                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+                            >
+                                Add Course
+                            </button>
                             {showUndo && (
                                 <button
                                     onClick={handleUndo}
@@ -324,6 +365,106 @@
                                         className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                                     >
                                         Confirm
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {showAddModal && (
+                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                            <div className="bg-white rounded p-6 w-[32rem]">
+                                <h2 className="text-lg font-semibold mb-4">Add New Course</h2>
+                                <div className="grid grid-cols-1 gap-3">
+                                    <div>
+                                        <label className="block text-sm text-gray-700 mb-1">Course Code</label>
+                                        <input
+                                            type="text"
+                                            className="w-full px-3 py-2 border rounded"
+                                            value={newCourse.course_code}
+                                            onChange={(e) => setNewCourse({ ...newCourse, course_code: e.target.value })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-700 mb-1">Program</label>
+                                        <select
+                                            className="w-full px-3 py-2 border rounded"
+                                            value={newCourse.program_id}
+                                            onChange={(e) => setNewCourse({ ...newCourse, program_id: e.target.value })}
+                                        >
+                                            <option value="">Select Program</option>
+                                            {programOptions.map(p => (
+                                                <option key={p.program_id} value={p.program_id}>{p.program_name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm text-gray-700 mb-1">Description</label>
+                                        <textarea
+                                            className="w-full px-3 py-2 border rounded"
+                                            rows="3"
+                                            value={newCourse.course_description}
+                                            onChange={(e) => setNewCourse({ ...newCourse, course_description: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-sm text-gray-700 mb-1">Units</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                className="w-full px-3 py-2 border rounded"
+                                                value={newCourse.units}
+                                                onChange={(e) => setNewCourse({ ...newCourse, units: parseInt(e.target.value || '0', 10) })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-gray-700 mb-1">Offered Status</label>
+                                            <select
+                                                className="w-full px-3 py-2 border rounded"
+                                                value={newCourse.offered}
+                                                onChange={(e) => setNewCourse({ ...newCourse, offered: e.target.value })}
+                                            >
+                                                <option value="offered">Offered</option>
+                                                <option value="not offered">Not Offered</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end space-x-2 mt-4">
+                                    <button
+                                        className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400"
+                                        onClick={() => setShowAddModal(false)}
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                                        onClick={async () => {
+                                            if (!newCourse.course_code || !newCourse.program_id || !newCourse.course_description) {
+                                                return alert('Please fill in all required fields.');
+                                            }
+                                            try {
+                                                const res = await fetch('http://localhost:5000/api/courses', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify(newCourse)
+                                                });
+                                                const result = await res.json();
+                                                if (!res.ok) {
+                                                    return alert(result.error || 'Failed to create course');
+                                                }
+                                                alert('Course created successfully');
+                                                setShowAddModal(false);
+                                                setNewCourse({ course_code: '', program_id: '', course_description: '', units: 3, offered: 'offered' });
+                                                fetchCourses();
+                                            } catch (e) {
+                                                console.error(e);
+                                                alert('Error creating course');
+                                            }
+                                        }}
+                                    >
+                                        Save
                                     </button>
                                 </div>
                             </div>

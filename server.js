@@ -13,7 +13,7 @@ const upload = multer({ dest: path.join(__dirname, 'uploads') });
 
 const app = express();
 // const PORT = process.env.PORT || 8080;
-
+ 
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -76,49 +76,52 @@ async function addLog(userId, action, details) {
 }
 
 // Login endpoint (index.html)
-app.post('/api/login', async (req, res) => {
+app.post("/api/login", async (req, res) => {
+    const { email, password } = req.body;
+
     try {
-        const { email, password } = req.body;
+        const [rows] = await pool.query(
+            `SELECT u.id, u.email, u.full_name, u.user_level, u.program_id, u.password,
+          p.program_name, p.program_level
+   FROM users u
+   LEFT JOIN programs p ON u.program_id = p.program_id
+   WHERE u.email = ?`,
+            [email]
+        );
 
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required' });
+        if (rows.length === 0) {
+            return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
-        if (users.length === 0) {
-            return res.status(401).json({ error: 'Invalid email or password' });
+        const user = rows[0];
+        const validPassword = await bcrypt.compare(password, user.password);
+        if (!validPassword) {
+            return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        const user = users[0];
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ error: 'Invalid email or password' });
-        }
-
-        const token = jwt.sign({ id: user.id, email: user.email }, 'your_jwt_secret', { expiresIn: '1h' });
-
+        const token = jwt.sign(
+            { id: user.id, email: user.email, user_level: user.user_level },
+            process.env.JWT_SECRET || "your_default_secret",
+            { expiresIn: "1h" }
+        );
 
         res.json({
-            message: 'Login successful',
             token,
             user: {
                 id: user.id,
                 email: user.email,
-                created_at: user.created_at,
+                full_name: user.full_name,
                 user_level: user.user_level,
                 program_id: user.program_id,
-                enrollment_status: user.enrollment_status
+                program_name: user.program_name,
+                program_level: user.program_level
             }
         });
-
-        await addLog(user.id, 'Login', `User ${user.email} logged in`);
-
-    } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+    } catch (err) {
+        console.error("Login error:", err);
+        res.status(500).json({ message: "Server error" });
     }
 });
-
 
 // Fetch offered courses for a specific program (courses_curriculum.html)
 app.get('/api/courses/offered/:programId', async (req, res) => {
@@ -172,6 +175,36 @@ app.get('/api/courses', async (req, res) => {
     }
 });
 
+// Create a new course (programs.html)
+app.post('/api/courses', async (req, res) => {
+    try {
+        const { course_code, program_id, course_description, units, offered } = req.body;
+
+        if (!course_code || !program_id || !course_description || units == null) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const offeredValue = offered === 'offered' || offered === 'not offered' ? offered : 'offered';
+
+        const [result] = await pool.query(
+            `INSERT INTO courses (course_code, program_id, course_description, units, offered)
+             VALUES (?, ?, ?, ?, ?)`,
+            [course_code, program_id, course_description, units, offeredValue]
+        );
+
+        res.status(201).json({
+            message: 'Course created successfully',
+            course_id: result.insertId
+        });
+    } catch (error) {
+        if (error && error.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ error: 'Course code already exists' });
+        }
+        console.error('Error creating course:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 // ✅ Add this route for updating offered status (progrmams.html)
 app.patch('/api/courses/:id/status', async (req, res) => {
     const { id } = req.params;
@@ -193,7 +226,7 @@ app.patch('/api/courses/:id/status', async (req, res) => {
         res.status(500).json({ error: 'Failed to update course status.' });
     }
 
-    await addLog(req.user.id, 'Course Status Update', `Set course ${req.params.id} to ${req.body.status}`);
+    await addLog(null, 'Course Status Update', `Set course ${req.params.id} to ${req.body.status}`);
 });
 
 // Registration endpoint (registration.html)
@@ -235,7 +268,7 @@ app.post('/api/register', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 
-    await addLog(req.user.id, 'Enrollment', `Enrolled in ${selectedCourses.length} courses`);
+    await addLog(null, 'Enrollment', `Enrolled in ${selectedCourses.length} courses`);
 });
 
 
@@ -284,6 +317,7 @@ app.get('/api/courses/offered-detailed', async (req, res) => {
     try {
         const [rows] = await pool.query(`
             SELECT
+                c.course_id,
                 c.course_code,
                 p.program_name,
                 c.course_description,
@@ -300,6 +334,7 @@ app.get('/api/courses/offered-detailed', async (req, res) => {
         `);
 
         const formatted = rows.map(course => ({
+            course_id: course.course_id,
             course_code: course.course_code,
             program_name: course.program_name,
             course_description: course.course_description,
@@ -407,7 +442,7 @@ app.post('/api/chatbot/add', async (req, res) => {
         res.status(500).json({ error: 'Insert failed' });
     }
 
-    await addLog(req.user.id, 'Chatbot Entry Added', `Keyword: ${req.body.keyword}`);
+    await addLog(null, 'Chatbot Entry Added', `Keyword: ${req.body.keyword}`);
 });
 
 // Get all responses (chatbotAdmin.html)
@@ -442,25 +477,34 @@ app.delete('/api/chatbot/delete/:id', async (req, res) => {
         res.status(500).json({ error: 'Delete failed' });
     }
 
-    await addLog(req.user.id, 'Chatbot Entry Deleted', `Deleted response ID ${req.params.id}`);
+    await addLog(null, 'Chatbot Entry Deleted', `Deleted response ID ${req.params.id}`);
 });
 
 // Get all students (students.html)
 app.get('/api/students', async (req, res) => {
     try {
         const [students] = await pool.query(`
-            SELECT 
-                enrollments.student_id,
-                users.id,
-                users.email,
-                users.full_name,
-                MIN(enrollments.status) AS status,
-                programs.program_name
-            FROM enrollments 
-            JOIN users ON enrollments.student_id = users.id
-            LEFT JOIN programs ON enrollments.program_id = programs.program_id
-            GROUP BY enrollments.student_id
-            ORDER BY enrollments.date_applied DESC
+            WITH ranked AS (
+                SELECT 
+                    e.student_id,
+                    u.id,
+                    u.email,
+                    u.full_name,
+                    e.status,
+                    p.program_name,
+                    e.date_applied,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY e.student_id
+                        ORDER BY (e.status IN ('pending','enrolled')) DESC, e.date_applied DESC, e.enrollment_id DESC
+                    ) AS rn
+                FROM enrollments e
+                JOIN users u ON e.student_id = u.id
+                LEFT JOIN programs p ON e.program_id = p.program_id
+            )
+            SELECT student_id, id, email, full_name, status, program_name
+            FROM ranked
+            WHERE rn = 1
+            ORDER BY date_applied DESC
         `);
         res.json(students);
     } catch (err) {
@@ -473,33 +517,58 @@ app.get('/api/students', async (req, res) => {
 app.get('/api/students/:id', async (req, res) => {
     const studentId = req.params.id;
     try {
-        const [[student]] = await pool.query(`
-            SELECT 
+        // Find latest batch preferring pending/enrolled over completed
+        const [[latest]] = await pool.query(
+            `SELECT date_applied, status
+             FROM enrollments
+             WHERE student_id = ?
+             ORDER BY (status IN ('pending','enrolled')) DESC, date_applied DESC, enrollment_id DESC
+             LIMIT 1`,
+            [studentId]
+        );
+
+        if (!latest) {
+            return res.status(404).json({ error: 'No enrollments found for student' });
+        }
+
+        // Meta from the chosen batch
+        const [[meta]] = await pool.query(
+            `SELECT 
                 u.full_name AS student_name,
                 u.email AS student_email,
                 u.id AS student_id,
-                u.id AS student_id_number,
+                e.student_id_number,
                 e.program_id,
                 e.address,
                 e.status,
+                e.term,
+                e.academic_year,
                 p.program_name
-            FROM users u
-            LEFT JOIN enrollments e ON u.id = e.student_id
-            LEFT JOIN programs p ON e.program_id = p.program_id
-            WHERE u.id = ?
-            LIMIT 1;
-        `, [studentId]);
+             FROM users u
+             JOIN enrollments e ON u.id = e.student_id
+             LEFT JOIN programs p ON e.program_id = p.program_id
+             WHERE u.id = ? AND e.date_applied = ?
+             LIMIT 1`,
+            [studentId, latest.date_applied]
+        );
 
-        const [enrolledCourses] = await pool.query(`
-            SELECT courses.course_code, courses.course_description, courses.units
-            FROM enrollments
-            JOIN courses ON enrollments.course_id = courses.course_id
-            WHERE enrollments.student_id = ?
-        `, [studentId]);
+        // Courses from the same batch; if pending, only show pending rows
+        const params = [studentId, latest.date_applied];
+        let courseQuery = `
+            SELECT c.course_code, c.course_description, c.units
+            FROM enrollments e
+            JOIN courses c ON e.course_id = c.course_id
+            WHERE e.student_id = ? AND e.date_applied = ?`;
+
+        if (latest.status === 'pending') {
+            courseQuery += ` AND e.status = 'pending'`;
+        }
+
+        const [courses] = await pool.query(courseQuery, params);
 
         res.json({
-            ...student,
-            courses: enrolledCourses
+            ...meta,
+            courses
         });
     } catch (err) {
         console.error('Error fetching student detail:', err);
@@ -524,16 +593,8 @@ app.patch('/api/students/:id/status', async (req, res) => {
 // Student enrollment with metadata (enrollment.html)
 app.post('/api/student-courses/enroll', async (req, res) => {
     const {
-        student_name,
-        student_id,
-        student_email,
-        student_id_number,
-        program_id,
-        course_ids,
-        term,
-        student_category,
-        academic_year,
-        address
+        student_name, student_id, student_email, student_id_number,
+        program_id, course_ids, term, student_category, academic_year, address
     } = req.body;
 
     if (!student_id || !course_ids?.length || !term || !student_category || !academic_year) {
@@ -544,28 +605,36 @@ app.post('/api/student-courses/enroll', async (req, res) => {
     try {
         await connection.beginTransaction();
 
+        // one timestamp for the whole batch
+        const now = new Date();
+
+        // insert one row per course with shared status+timestamp
         const insertPromises = course_ids.map(course_id =>
             connection.query(
-                `INSERT INTO enrollments 
-                (student_id, course_id, term, student_category, academic_year, address,
-                student_name, student_email, student_id_number, program_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO enrollments
+         (student_id, course_id, term, student_category, academic_year, address,
+          student_name, student_email, student_id_number, program_id, status, date_applied)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
                 [
                     student_id, course_id, term, student_category, academic_year, address,
-                    student_name, student_email, student_id_number, program_id
+                    student_name, student_email, student_id_number, program_id, now
                 ]
             )
         );
         await Promise.all(insertPromises);
 
-        // Calculate total units
+        // keep your existing user/program update + fee calculation...
+        await connection.query(
+            `UPDATE users SET full_name = ?, program_id = ? WHERE id = ?`,
+            [student_name, program_id, student_id]
+        );
+
         const [courses] = await connection.query(
             `SELECT units FROM courses WHERE course_id IN (${course_ids.map(() => '?').join(',')})`,
             course_ids
         );
-        const totalUnits = courses.reduce((sum, course) => sum + course.units, 0);
+        const totalUnits = courses.reduce((sum, c) => sum + c.units, 0);
 
-        // Determine tuition per unit
         const [[{ program_level }]] = await connection.query(
             'SELECT program_level FROM programs WHERE program_id = ?',
             [program_id]
@@ -575,26 +644,15 @@ app.post('/api/student-courses/enroll', async (req, res) => {
 
         const isNew = student_category.toLowerCase() === 'new';
         const misc =
-            (isNew ? 100 : 0) + // Entrance
-            150 +               // ILS
-            500 +               // Energy
-            150 +               // Registration
-            150 +               // Athletic
-            100 +               // Cultural
-            200 +               // Library
-            (isNew ? 100 : 0) + // School ID
-            200 +               // Internet
-            200 +               // Laboratory
-            1275 +              // Development
-            150 +               // Medical
-            100;                // Guidance
+            (isNew ? 100 : 0) + 150 + 500 + 150 + 150 + 100 + 200 + (isNew ? 100 : 0) +
+            200 + 200 + 1275 + 150 + 100;
 
         const total = tuition + misc;
 
         await connection.query(
-            `INSERT INTO enrollment_fees 
-            (student_id, total_units, tuition_fee, misc_fee, total_fee)
-            VALUES (?, ?, ?, ?, ?)`,
+            `INSERT INTO enrollment_fees
+       (student_id, total_units, tuition_fee, misc_fee, total_fee)
+       VALUES (?, ?, ?, ?, ?)`,
             [student_id, totalUnits, tuition, misc, total]
         );
 
@@ -607,9 +665,54 @@ app.post('/api/student-courses/enroll', async (req, res) => {
     } finally {
         connection.release();
     }
-
-    await addLog(req.user.id, 'Enrollment', `Enrolled in ${selectedCourses.length} courses`);
 });
+
+// Latest application snapshot for a student (used by enrollment.html)
+app.get('/api/student/enrollment/latest/:studentId', async (req, res) => {
+    const { studentId } = req.params;
+    try {
+        // find the most recent application by timestamp
+        const [[latest]] = await pool.query(
+            `SELECT MAX(date_applied) AS latest_date
+         FROM enrollments
+        WHERE student_id = ?`,
+            [studentId]
+        );
+
+        if (!latest || !latest.latest_date) {
+            return res.json({ status: 'none', student: null, courses: [] });
+        }
+
+        // one row from that batch (for meta)
+        const [[meta]] = await pool.query(
+            `SELECT status, term, student_category, academic_year, address,
+              student_name, student_email, student_id_number, program_id
+         FROM enrollments
+        WHERE student_id = ? AND date_applied = ?
+        LIMIT 1`,
+            [studentId, latest.latest_date]
+        );
+
+        // all courses from that same batch
+        const [courses] = await pool.query(
+            `SELECT e.course_id, c.course_code, c.course_description, c.units
+         FROM enrollments e
+         JOIN courses c ON e.course_id = c.course_id
+        WHERE e.student_id = ? AND e.date_applied = ?`,
+            [studentId, latest.latest_date]
+        );
+
+        res.json({
+            status: (meta?.status || 'none'),
+            student: meta || null,
+            courses
+        });
+    } catch (err) {
+        console.error('latest enrollment fetch error', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 // (enrollment.html)
 app.get('/api/enrollment-fees/:studentId', async (req, res) => {
@@ -629,6 +732,7 @@ app.get('/api/enrollment-fees/:studentId', async (req, res) => {
 
 
 // Delete student courses by ID number (enrollment.html)
+// Delete pending student courses by ID number (enrollment.html)
 app.delete('/api/student-courses/delete/:student_id', async (req, res) => {
     const { student_id } = req.params;
 
@@ -636,21 +740,34 @@ app.delete('/api/student-courses/delete/:student_id', async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        await connection.query('DELETE FROM enrollments WHERE student_id = ?', [student_id]);
-        await connection.query('DELETE FROM enrollment_fees WHERE student_id = ?', [student_id]);
+        // Only delete enrollments with status 'pending'
+        const [deletedEnrollments] = await connection.query(
+            'DELETE FROM enrollments WHERE student_id = ? AND status = ?',
+            [student_id, 'pending']
+        );
+
+        // Delete corresponding fees for only the deleted enrollments
+        // Assuming enrollment_fees has a foreign key 'enrollment_id'
+        if (deletedEnrollments.affectedRows > 0) {
+            await connection.query(
+                'DELETE ef FROM enrollment_fees ef JOIN enrollments e ON ef.enrollment_id = e.id WHERE e.student_id = ? AND e.status = ?',
+                [student_id, 'pending']
+            );
+        }
 
         await connection.commit();
-        res.json({ message: 'Enrollment and fees deleted successfully.' });
+        res.json({ message: 'Pending enrollments and related fees deleted successfully.' });
     } catch (err) {
         await connection.rollback();
         console.error('Delete error:', err);
-        res.status(500).json({ error: 'Failed to delete enrollment and fees.' });
+        res.status(500).json({ error: 'Failed to delete pending enrollments and fees.' });
     } finally {
         connection.release();
     }
 
-    await addLog(req.user.id, 'Enrollment Deletion', `Deleted all enrollments for student ${req.params.student_id}`);
+    await addLog(null, 'Enrollment Deletion', `Deleted pending enrollments for student ${student_id}`);
 });
+
 
 
 // Check if a user is enrolled in any courses (enrollment.html)
@@ -757,7 +874,7 @@ app.post('/api/teacher/grades', async (req, res) => {
     try {
         // Get student name from enrollment + users
         const [enrollment] = await pool.query(
-            `SELECT u.full_name AS student_name
+            `SELECT u.full_name AS student_name, e.academic_year, e.term
              FROM enrollments e
              JOIN users u ON e.student_id = u.id
              WHERE e.enrollment_id = ?`,
@@ -768,11 +885,50 @@ app.post('/api/teacher/grades', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Enrollment not found' });
         }
 
-        const { student_name } = enrollment[0];
+        if (enrollment.program_id) {
+            try {
+                const programRes = await fetch(
+                    `http://localhost:5000/api/program-details/${enrollment.program_id}`
+                );
+                const programData = await programRes.json();
 
-        // ✅ define current AY + term (or fetch from config table if you have one)
-        const academic_year = "2024-2025";
-        const term = "1st Semester";
+                // make sure it's an array
+                const programDetails = Array.isArray(programData) && programData.length > 0
+                    ? programData[0]
+                    : {};
+
+                const updatedForm = {
+                    name: enrollment.student_name || '',
+                    address: enrollment.address || '',
+                    email: enrollment.student_email || '',
+                    id_number: enrollment.student_id_number || '',
+                    program_id: enrollment.program_id || '',
+                    academic_year: enrollment.academic_year || '',
+                    term: enrollment.term || '',
+                    student_category: enrollment.student_category || '',
+                    program_name: programDetails.program_name || '',
+                    program_level: programDetails.program_level || ''
+                };
+
+                setFormData(updatedForm);
+            } catch (err) {
+                console.error("Program fetch error:", err);
+            }
+        } else {
+            console.warn("⚠️ No program_id found in enrollment");
+        }
+
+        const { student_name } = enrollment[0];
+        const academic_year = enrollment[0].academic_year;
+        const termRaw = (enrollment[0].term || '').trim();
+        const termMap = {
+            '1st sem': '1st Semester',
+            '1st semester': '1st Semester',
+            '2nd sem': '2nd Semester',
+            '2nd semester': '2nd Semester',
+            'summer': 'Summer'
+        };
+        const term = termMap[termRaw.toLowerCase()] || termRaw;
 
         // Check if grade already exists
         const [existing] = await pool.query(
@@ -849,7 +1005,7 @@ app.post('/api/admin/end-term', async (req, res) => {
         connection.release();
     }
 
-    await addLog(req.user.id, 'End Term', 'Reset all offered courses');
+    await addLog(null, 'End Term', 'Reset all offered courses');
 });
 
 // ✅ Undo endpoint
@@ -879,7 +1035,7 @@ app.post('/api/admin/undo-end-term', async (req, res) => {
         connection.release();
     }
 
-    await addLog(req.user.id, 'Undo End Term', 'Restored previous course offerings');
+    await addLog(null, 'Undo End Term', 'Restored previous course offerings');
 });
 
 // Utility: Validate schedule format (e.g. 8-12S or 5:30-7:30F)
@@ -944,7 +1100,7 @@ app.post('/api/courses/:courseId/schedule-faculty', async (req, res) => {
         connection.release();
     }
 
-    await addLog(req.user.id, 'Schedule/Faculty Assignment', `Assigned schedule ${req.body.schedule} and faculty ${req.body.facultyName} to course ${req.params.courseId}`);
+    await addLog(null, 'Schedule/Faculty Assignment', `Assigned schedule ${req.body.schedule} and faculty ${req.body.facultyName} to course ${req.params.courseId}`);
 });
 
 // Get all faculty with linked email (for facultyAdmin.html)

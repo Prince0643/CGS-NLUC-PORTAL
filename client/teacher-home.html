@@ -42,9 +42,11 @@
                 try {
                     const res = await fetch(`http://localhost:5000/api/faculty/by-user/${userId}`);
                     const data = await res.json();
-                    if (data.faculty_id) {
-                        fetchStudents(data.faculty_id);
-                    } else {
+                    // after fetching faculty by user
+if (data.faculty_id) {
+  setFacultyId(data.faculty_id);   // add this
+  fetchStudents(data.faculty_id);
+} else {
                         setIsLoading(false);
                     }
                 } catch (err) {

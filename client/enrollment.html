@@ -19,7 +19,6 @@
             }
         }
 
-        /* PDF rendering fix */
         .pdf-container {
             margin: 0 !important;
             padding: 0 !important;
@@ -41,11 +40,14 @@
             <ul class="flex-1 mt-4 space-y-1 px-4">
                 <li><a href="home.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Home</a></li>
                 <li><a href="enrollment.html" class="block py-2 px-3 rounded bg-green-700">Enrollment</a></li>
-                <li><a href="checklist.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Checklist</a></li>
-                <li><a href="citizens-charter.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Downloads</a>
+                <li><a href="checklist.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Checklist</a>
                 </li>
-                <li><a href="chatbot.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Chatbot</a></li>
-                <li><a href="settings.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Settings</a></li>
+                <li><a href="citizens-charter.html"
+                        class="block py-2 px-3 rounded hover:bg-green-700 transition">Downloads</a></li>
+                <li><a href="chatbot.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Chatbot</a>
+                </li>
+                <li><a href="settings.html" class="block py-2 px-3 rounded hover:bg-green-700 transition">Settings</a>
+                </li>
             </ul>
             <div class="p-4 border-t border-green-600 text-sm">
                 Logged in as: <span id="loggedInUser" class="font-semibold">Loading...</span>
@@ -58,244 +60,129 @@
         </main>
     </div>
 
-    <!-- React + Babel Script -->
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useEffect, useMemo, useRef, useState } = React;
 
-        function computeFees(formData, selectedCourses) {
-            const unitRate = formData.program_level === 'Doctorate' ? 500 : 400;
-            const totalUnits = selectedCourses.reduce((sum, course) => sum + (course.units || 0), 0);
-            const tuition_fee = totalUnits * unitRate;
+        // ---- utils ----
+        const api = (path, opts = {}) => fetch(`http://localhost:5000${path}`, opts).then(r => r.json());
+        const fmt = n => (Number(n) || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            const fixed_fees = {
-                entrance: formData.student_category === 'New' ? 100 : 0,
-                ils: 150,
-                energy: 500,
-                registration: 150,
-                athletic: 150,
-                cultural: 100,
-                library: 200,
-                school_id: formData.student_category === 'New' ? 100 : 0,
-                internet: 200,
-                laboratory: 200,
-                development: 1275,
-                medical_dental: 150,
-                guidance: 100
-            };
-
-            const total_fee = tuition_fee + Object.values(fixed_fees).reduce((a, b) => a + b, 0);
-
-            return {
-                ...fixed_fees,
-                tuition_fee,
-                total_fee
-            };
-        }
-
-        function EnrollmentForm() {
-            const [status, setStatus] = useState(null);
-            const [statusChecked, setStatusChecked] = useState(false);
-
-            useEffect(() => {
-                const loggedUser = JSON.parse(localStorage.getItem('user'));
-                if (!loggedUser) return;
-
-                fetch(`http://localhost:5000/api/students/${loggedUser.id}`)
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data && data.status) {
-                            setStatus(data.status.toLowerCase());
-                        }
-                        setStatusChecked(true);
-                    })
-                    .catch(err => {
-                        console.error('Status fetch error:', err);
-                        setStatusChecked(true); // still allow fallback
-                    });
-            }, []);
-
-            if (!statusChecked) {
-                return <div className="text-center text-gray-500 mt-20">Checking enrollment status...</div>;
-            }
-
-            if (status === 'enrolled') {
-                return (
-                    <div className="flex items-center justify-center h-screen w-full bg-gray-100">
-                        <div className="bg-white shadow-lg p-10 rounded-lg text-center max-w-md">
-                            <h2 className="text-2xl font-bold text-green-600 mb-4">You're Officially Enrolled!</h2>
-                            <p className="mb-6 text-gray-600">Welcome aboard! You can now proceed to view your academic checklist.</p>
-                            <a href="checklist.html" className="inline-block bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition">Go to Checklist</a>
-                        </div>
-                    </div>
-                );
-            }
-
-            // 🟢 Render the full enrollment form and confirmation
-            return <FullEnrollmentForm />;
-        }
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<EnrollmentForm />);
-
-        function FullEnrollmentForm() {
-            const pdfRef = React.useRef();
-
-            const handlePrintPDF = () => {
-                if (!pdfRef.current) return;
-
-                const element = pdfRef.current;
-
-                const width = 800; // fixed width for consistent rendering
-                const scale = 1.4;
-
-                html2pdf().set({
-                    margin: [10, 10, 10, 10], // small margin all sides
-                    filename: `Enrollment-${formData.id_number}.pdf`,
-                    image: { type: 'jpeg', quality: 1 },
-                    html2canvas: {
-                        scale: 1.5,
-                        useCORS: true,
-                        scrollY: 0
-                    },
-                    jsPDF: {
-                        unit: 'mm',
-                        format: 'Legal',
-                        orientation: 'portrait'
-                    },
-                    pagebreak: { mode: ['avoid-all'] }
-                }).from(element).save();
-            };
-
-            const [formData, setFormData] = useState({
-                name: '',
-                address: '',
-                email: '',
-                id_number: '',
-                program_level: '', // ← new field
-                program_id: '',
-                academic_year: '2025-2026',
-                term: '1st Sem',
-                student_category: 'New'
-            });
-
-
+        // ---- Full form & confirmation component ----
+        function FullEnrollmentForm({ pendingSnapshot }) {
+            const pdfRef = useRef(null);
+            const user = useMemo(() => JSON.parse(localStorage.getItem('user') || '{}'), []);
+            const [message, setMessage] = useState('');
             const [programs, setPrograms] = useState([]);
             const [courses, setCourses] = useState([]);
             const [selected, setSelected] = useState([]);
-            const [message, setMessage] = useState('');
             const [submittedData, setSubmittedData] = useState(null);
-            const [editMode, setEditMode] = useState(false);
-            const [submittedFees, setSubmittedFees] = useState(null);
+            const [fees, setFees] = useState(null);
 
+            const [formData, setFormData] = useState(() => {
+                // hydrate from pendingSnapshot if present (status === "pending")
+                if (pendingSnapshot?.student) {
+                    const s = pendingSnapshot.student;
+                    return {
+                        name: s.student_name || '',
+                        address: s.address || '',
+                        email: s.student_email || '',
+                        id_number: s.student_id_number || '',
+                        program_id: s.program_id || '',
+                        program_level: s.program_level || '', // will be filled after program-details
+                        academic_year: s.academic_year || '2025-2026',
+                        term: s.term || '1st Sem',
+                        student_category: s.student_category || 'New'
+                    };
+                }
+                // fresh defaults
+                return {
+                    name: '',
+                    address: '',
+                    email: '',
+                    id_number: '',
+                    program_id: '',
+                    program_level: '',
+                    academic_year: '2025-2026',
+                    term: '1st Sem',
+                    student_category: 'New'
+                };
+            });
+
+            // load programs
+            useEffect(() => { api('/api/programs').then(setPrograms).catch(() => { }); }, []);
+
+            // if we have a pending snapshot, fetch offered for that program and mark selected courses
             useEffect(() => {
-                fetch('http://localhost:5000/api/programs')
-                    .then(res => res.json())
-                    .then(data => setPrograms(data));
-            }, []);
+                const initFromPending = async () => {
+                    if (!pendingSnapshot?.student?.program_id) return;
+                    try {
+                        // program details to fill level
+                        const pd = await api(`/api/program-details/${pendingSnapshot.student.program_id}`);
+                        const p = Array.isArray(pd) ? pd[0] : pd;
+                        setFormData(prev => ({ ...prev, program_level: p?.program_level || prev.program_level }));
 
-            useEffect(() => {
-                const loggedUser = JSON.parse(localStorage.getItem('user'));
-                if (!loggedUser) return;
+                        // offered courses for this program
+                        const offered = await api(`/api/courses/offered/${pendingSnapshot.student.program_id}`);
+                        setCourses(offered || []);
 
-                fetch(`http://localhost:5000/api/enrollment/${loggedUser.id}`)
-                    .then(res => res.json())
-                    .then(async data => {
-                        if (data.enrolled && data.data.length > 0) {
-                            const enrollment = data.data[0];
+                        // which ones did the student select?
+                        const selectedIds = (pendingSnapshot.courses || []).map(c => c.course_id).filter(Boolean);
+                        setSelected(selectedIds);
 
-                            const courseRes = await fetch(`http://localhost:5000/api/courses/offered/${enrollment.program_id}`);
-                            const courseData = await courseRes.json();
-                            setCourses(courseData);
+                        // also prepare confirmation view data right away
+                        setSubmittedData({
+                            selectedCourses: selectedIds.map(id => offered.find(c => c.course_id === id)).filter(Boolean)
+                        });
 
-                            const programRes = await fetch(`http://localhost:5000/api/program-details/${enrollment.program_id}`);
-                            const [programDetails] = await programRes.json();
+                        // fetch their computed fees snapshot (if exists)
+                        const f = await api(`/api/enrollment-fees/${user.id}`).catch(() => null);
+                        if (!f?.error) setFees(f);
 
-                            const selectedIds = data.data.map(e => e.course_id);
-                            const selectedCourses = selectedIds
-                                .map(id => courseData.find(c => c.course_id === id))
-                                .filter(Boolean);
+                    } catch (e) { console.error(e); }
+                };
+                initFromPending();
+                // eslint-disable-next-line
+            }, [pendingSnapshot, user?.id]);
 
-                            const updatedForm = {
-                                name: enrollment.student_name || '',
-                                address: enrollment.address || '',
-                                email: enrollment.student_email || '',
-                                id_number: enrollment.student_id_number || '',
-                                program_id: enrollment.program_id || '',
-                                academic_year: enrollment.academic_year || '',
-                                term: enrollment.term || '',
-                                student_category: enrollment.student_category || '',
-                                program_name: programDetails.program_name || '',
-                                program_level: programDetails.program_level || ''
-                            };
+            // when user selects a program manually (fresh enrollment)
+            const handleProgramSelect = async (e) => {
+                const program_id = e.target.value;
+                setFormData(prev => ({ ...prev, program_id }));
+                setSelected([]);
+                if (!program_id) { setCourses([]); return; }
+                try {
+                    const [offered, details] = await Promise.all([
+                        api(`/api/courses/offered/${program_id}`),
+                        api(`/api/program-details/${program_id}`)
+                    ]);
+                    setCourses(offered || []);
+                    const p = Array.isArray(details) ? details[0] : details;
+                    setFormData(prev => ({ ...prev, program_level: p?.program_level || '' }));
+                } catch (e) { console.error(e); }
+            };
 
-
-                            setFormData(updatedForm);
-                            setSelected(selectedIds);
-                            setSubmittedData({ formData: updatedForm, selectedIds, selectedCourses });
-                            const computed = computeFees(updatedForm, selectedCourses);
-                            setSubmittedFees(computed);
-                        }
-                    })
-                    .catch(err => console.error('Enrollment fetch error:', err));
-            }, []);
-
-            const handleInput = e => {
+            const handleInput = (e) => {
                 const { name, value } = e.target;
                 setFormData(prev => ({ ...prev, [name]: value }));
             };
 
-            const handleProgramSelect = async (e) => {
-                const program_id = e.target.value;
-                setFormData(prev => ({ ...prev, program_id }));
-                if (!program_id) return setCourses([]);
-
-                try {
-                    const res = await fetch(`http://localhost:5000/api/courses/offered/${program_id}`);
-                    const data = await res.json();
-                    setCourses(data);
-                } catch (err) {
-                    console.error('Error loading courses:', err);
-                }
-            };
-
-            const handleLevelSelect = e => {
-                const level = e.target.value;
-                setFormData(prev => ({ ...prev, program_level: level }));
-            };
-
-            const handleToggle = courseId => {
-                setSelected(prev =>
-                    prev.includes(courseId) ? prev.filter(id => id !== courseId) : [...prev, courseId]
-                );
+            const toggleCourse = (id) => {
+                setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
             };
 
             const handleSubmit = async (e) => {
                 e.preventDefault();
-                const { name, email, id_number, academic_year, term, student_category } = formData;
-                if (!name || !email || !id_number || !academic_year || !term || !student_category || selected.length === 0) {
-                    setMessage('Please fill out all fields and select at least one course.');
-                    return;
-                }
-
-                if (submittedData) {
-                    setMessage("You have already enrolled.");
-                    return;
-                }
-
-                const student_id = JSON.parse(localStorage.getItem('user')).id;
-
-                const endpoint = editMode
-                    ? `http://localhost:5000/api/student-courses/update/${student_id}`
-                    : 'http://localhost:5000/api/student-courses/enroll';
-
-                const method = editMode ? 'PUT' : 'POST';
+                setMessage('');
+                const required = ['name', 'email', 'id_number', 'academic_year', 'term', 'student_category', 'program_id'];
+                for (const k of required) if (!formData[k]) return setMessage('Please complete all required fields.');
+                if (selected.length === 0) return setMessage('Select at least one course.');
 
                 try {
-                    const res = await fetch(endpoint, {
-                        method,
+                    const res = await api('/api/student-courses/enroll', {
+                        method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            student_id,
+                            student_id: user.id,
                             student_name: formData.name,
                             student_email: formData.email,
                             student_id_number: formData.id_number,
@@ -308,277 +195,292 @@
                         })
                     });
 
-                    const result = await res.json();
-                    setMessage(result.message || result.error || 'Submitted.');
+                    if (res?.error) {
+                        setMessage(res.error);
+                        return;
+                    }
 
+                    // build confirmation snapshot
                     const selectedCourses = selected.map(id => courses.find(c => c.course_id === id)).filter(Boolean);
-                    const savedData = { formData, selectedIds: selected, selectedCourses };
-                    setSubmittedData(savedData);
+                    setSubmittedData({ selectedCourses });
 
-                    // ✅ fetch fee details after successful enrollment
-                    const feeRes = await fetch(`http://localhost:5000/api/enrollment-fees/${student_id}`);
-                    const feeData = await feeRes.json();
-                    setSubmittedFees(feeData);
-
-                    setEditMode(false);
-                } catch (err) {
-                    console.error(err);
+                    const f = await api(`/api/enrollment-fees/${user.id}`).catch(() => null);
+                    if (!f?.error) setFees(f);
+                    setMessage(res.message || 'Enrollment submitted.');
+                } catch (e) {
+                    console.error(e);
                     setMessage('Submission failed.');
                 }
             };
 
             const handleDelete = async () => {
-                const loggedUser = JSON.parse(localStorage.getItem('user'));
-                if (!loggedUser?.id) return alert('User not found.');
-
-                const confirmDelete = confirm("Are you sure you want to delete your enrollment?");
-                if (!confirmDelete) return;
-
+                if (!confirm('Delete your enrollment and fees?')) return;
                 try {
-                    const res = await fetch(`http://localhost:5000/api/student-courses/delete/${loggedUser.id}`, {
-                        method: 'DELETE'
-                    });
-
-                    const result = await res.json();
-                    setMessage(result.message || 'Deleted.');
-                    window.location.reload(); // force full reset (optional but guarantees clean state)
-
-                    setFormData({
-                        name: '',
-                        address: '',
-                        email: '',
-                        id_number: '',
-                        program_id: '',
-                        academic_year: '2025-2026',
-                        term: '1st Sem',
-                        student_category: 'New'
-                    });
-                    setSelected([]);
-                    setCourses([]);
+                    const res = await api(`/api/student-courses/delete/${user.id}`, { method: 'DELETE' });
+                    setMessage(res?.message || 'Deleted.');
+                    // reset
                     setSubmittedData(null);
-                    setEditMode(false);  // just in case
-                } catch (err) {
-                    console.error(err);
+                    setFees(null);
+                    setSelected([]);
+                } catch (e) {
+                    console.error(e);
                     setMessage('Failed to delete.');
                 }
             };
 
+            const handlePrintPDF = () => {
+                if (!pdfRef.current) return;
+                html2pdf().set({
+                    margin: [10, 10, 10, 10],
+                    filename: `Enrollment-${formData.id_number || 'student'}.pdf`,
+                    image: { type: 'jpeg', quality: 1 },
+                    html2canvas: { scale: 1.5, useCORS: true, scrollY: 0 },
+                    jsPDF: { unit: 'mm', format: 'Legal', orientation: 'portrait' },
+                    pagebreak: { mode: ['avoid-all'] }
+                }).from(pdfRef.current).save();
+            };
+
+            // ---- render ----
+            if (submittedData) {
+                return (
+                    <div className="bg-white p-6 shadow rounded text-sm max-w-3xl mx-auto">
+                        <div ref={pdfRef} className="pdf-container bg-white text-black text-sm mx-auto">
+                            <h2 className="text-lg font-bold text-center uppercase mb-2">Registration Confirmation</h2>
+
+                            <div className="grid grid-cols-3 gap-4 border-b pb-2 mb-2">
+                                <div><strong>STUDENT CATEGORY:</strong> {formData.student_category}</div>
+                                <div><strong>SCHOOL YEAR:</strong> {formData.academic_year}</div>
+                                <div><strong>TERM:</strong> {formData.term}</div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mb-2">
+                                <div><strong>NAME:</strong> {formData.name}</div>
+                                <div><strong>PROGRAM:</strong> {programs.find(p => p.program_id == formData.program_id)?.program_name || 'N/A'}</div>
+                                <div><strong>ADDRESS:</strong> {formData.address}</div>
+                                <div><strong>ID NUMBER:</strong> {formData.id_number}</div>
+                                <div><strong>EMAIL:</strong> {formData.email}</div>
+                            </div>
+
+                            <div className="mb-4">
+                                <h3 className="font-bold text-center underline mb-1">COURSES</h3>
+                                <table className="w-full border border-gray-300 text-sm">
+                                    <thead>
+                                        <tr className="bg-gray-200">
+                                            <th className="p-2 border">COURSE NUMBER</th>
+                                            <th className="p-2 border">DESCRIPTIVE TITLE</th>
+                                            <th className="p-2 border">UNITS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {submittedData.selectedCourses.map((c, i) => (
+                                            <tr key={i}>
+                                                <td className="p-2 border">{c.course_code}</td>
+                                                <td className="p-2 border">{c.course_description}</td>
+                                                <td className="p-2 border text-center">{c.units}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {fees && (
+                                <div className="mb-4">
+                                    <h3 className="font-bold text-center underline mb-2">CASHIER ASSESSMENT</h3>
+                                    <table className="w-full border text-sm">
+                                        <tbody>
+                                            {Object.entries({
+                                                Entrance: formData.student_category === 'New' ? 100 : 0,
+                                                ILS: 150,
+                                                Energy: 500,
+                                                Registration: 150,
+                                                Tuition: fees.tuition_fee,
+                                                Athletic: 150,
+                                                Cultural: 100,
+                                                Library: 200,
+                                                "School ID": formData.student_category === 'New' ? 100 : 0,
+                                                Internet: 200,
+                                                Laboratory: 200,
+                                                Development: 1275,
+                                                "Medical/Dental": 150,
+                                                Guidance: 100
+                                            }).map(([label, amount], i) => (
+                                                <tr key={i}>
+                                                    <td className="p-2 border">{label}</td>
+                                                    <td className="p-2 border text-right">{fmt(amount)}</td>
+                                                </tr>
+                                            ))}
+                                            <tr className="font-bold bg-gray-100">
+                                                <td className="p-2 border">TOTAL</td>
+                                                <td className="p-2 border text-right text-green-700">{fmt(fees.total_fee)}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+                            <p className="text-xs text-gray-600 italic mt-2 text-center">
+                                NOTE: This is only the expected fee of your enrollment. For the exact amount, you may ask the cashier.
+                            </p>
+                        </div>
+
+                        <div className="flex gap-2 mt-4">
+                            <button onClick={handlePrintPDF} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Download PDF</button>
+                            <button onClick={handleDelete} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
+                        </div>
+
+                        {message && <p className="text-sm mt-3 text-blue-600">{message}</p>}
+                    </div>
+                );
+            }
 
             return (
                 <div className="bg-white p-6 shadow rounded text-sm max-w-3xl mx-auto">
                     <h1 className="text-xl font-bold text-center uppercase mb-4">Enrollment Form</h1>
 
-                    {!submittedData || editMode ? (
-                        <form onSubmit={handleSubmit} className="space-y-4">
-                            <div>
-                                <label className="block mb-1">Full Name</label>
-                                <input type="text" name="name" value={formData.name} onChange={handleInput} className="border p-2 rounded w-full" required />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block mb-1">Address</label>
-                                    <input type="text" name="address" value={formData.address} onChange={handleInput} className="border p-2 rounded w-full" />
-                                </div>
-                                <div>
-                                    <label className="block mb-1">Email</label>
-                                    <input type="email" name="email" value={formData.email} onChange={handleInput} className="border p-2 rounded w-full" required />
-                                </div>
-                                <div>
-                                    <label className="block mb-1">ID Number</label>
-                                    <input type="text" name="id_number" value={formData.id_number} onChange={handleInput} className="border p-2 rounded w-full" required />
-                                </div>
-                                <div>
-                                    <label className="block mb-1">Program Level</label>
-                                    <select
-                                        name="program_level"
-                                        value={formData.program_level}
-                                        onChange={handleLevelSelect}
-                                        className="border p-2 rounded w-full"
-                                        required
-                                    >
-                                        <option value="">Select Level</option>
-                                        <option value="Masteral">Masteral</option>
-                                        <option value="Doctorate">Doctorate</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block mb-1">Program</label>
-                                    <select name="program_id" value={formData.program_id || ''} onChange={handleProgramSelect} className="border p-2 rounded w-full" required>
-                                        <option value="">Select Program</option>
-                                        {programs.map(p => (
-                                            <option key={p.program_id} value={p.program_id}>{p.program_name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block mb-1">Academic Year</label>
-                                    <input type="text" name="academic_year" value={formData.academic_year || ''} onChange={handleInput} className="border p-2 rounded w-full" required />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block mb-1">Term</label>
-                                    <select name="term" value={formData.term || ''} onChange={handleInput} className="border p-2 rounded w-full" required>
-                                        <option value="1st Sem">1st Sem</option>
-                                        <option value="2nd Sem">2nd Sem</option>
-                                        <option value="Midyear">Midyear</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block mb-1">Student Category</label>
-                                    <select name="student_category" value={formData.student_category || ''} onChange={handleInput} className="border p-2 rounded w-full" required>
-                                        <option value="New">New</option>
-                                        <option value="Old">Old</option>
-                                        <option value="Trans">Transferee</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div className="mt-4">
-                                <h2 className="font-semibold mb-2">Select Courses</h2>
-                                {courses.map(course => (
-                                    <div key={course.course_id} className="flex items-start p-2 border rounded mb-2 hover:bg-gray-50">
-                                        <input
-                                            type="checkbox"
-                                            id={`course-${course.course_id}`}
-                                            checked={selected.includes(course.course_id)}
-                                            onChange={() => handleToggle(course.course_id)}
-                                            className="mt-1 mr-3"
-                                        />
-                                        <label htmlFor={`course-${course.course_id}`} className="cursor-pointer">
-                                            <div className="font-medium">{course.course_code}</div>
-                                            <div className="text-gray-600 text-sm">{course.course_description}</div>
-                                        </label>
-                                    </div>
-
-                                ))}
-                            </div>
-
-                            <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 mt-4">Submit Form</button>
-                            {message && <p className="text-sm mt-2 text-blue-600">{message}</p>}
-                        </form>
-                    ) : (
+                    <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <div
-                                ref={pdfRef}
-                                className="pdf-container bg-white text-black text-sm mx-auto"
-                            >
-                                <h2 className="text-lg font-bold text-center uppercase mb-2">Registration Confirmation</h2>
+                            <label className="block mb-1">Full Name</label>
+                            <input name="name" value={formData.name} onChange={handleInput} className="border p-2 rounded w-full" required />
+                        </div>
 
-                                <br></br>
-
-                                <div className="grid grid-cols-3 gap-4 border-b pb-2 mb-2">
-                                    <div><strong>STUDENT CATEGORY:</strong> {formData.student_category}</div>
-                                    <div><strong>SCHOOL YEAR:</strong> {formData.academic_year}</div>
-                                    <div><strong>TERM:</strong> {formData.term}</div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 mb-2">
-                                    <div><strong>NAME:</strong> {formData.name}</div>
-                                    <div><strong>PROGRAM:</strong> {programs.find(p => p.program_id === formData.program_id)?.program_name || 'N/A'}</div>
-                                    <div><strong>ADDRESS:</strong> {formData.address}</div>
-                                    <div><strong>ID NUMBER:</strong> {formData.id_number}</div>
-                                    <div><strong>EMAIL:</strong> {formData.email}</div>
-                                </div>
-
-                                <br></br>
-
-                                <div className="mb-4">
-                                    <h3 className="font-bold text-center underline mb-1">COURSES</h3>
-                                    <table className="w-full border border-gray-300 text-sm">
-                                        <thead>
-                                            <tr className="bg-gray-200">
-                                                <th className="p-2 border">COURSE NUMBER</th>
-                                                <th className="p-2 border">DESCRIPTIVE TITLE</th>
-                                                <th className="p-2 border">UNITS</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {submittedData.selectedCourses.map((course, i) => (
-                                                <tr key={i}>
-                                                    <td className="p-2 border">{course.course_code}</td>
-                                                    <td className="p-2 border">{course.course_description}</td>
-                                                    <td className="p-2 border text-center">{course.units}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <br></br>
-
-                                {submittedFees && (
-                                    <div className="mb-4">
-                                        <h3 className="font-bold text-center underline mb-2">CASHIER ASSESSMENT</h3>
-                                        <table className="w-full border text-sm">
-                                            <tbody>
-                                                {Object.entries({
-                                                    Entrance: formData.student_category === 'New' ? 100 : 0,
-                                                    ILS: 150,
-                                                    Energy: 500,
-                                                    Registration: 150,
-                                                    Tuition: submittedFees.tuition_fee,
-                                                    Athletic: 150,
-                                                    Cultural: 100,
-                                                    Library: 200,
-                                                    "School ID": formData.student_category === 'New' ? 100 : 0,
-                                                    Internet: 200,
-                                                    Laboratory: 200,
-                                                    Development: 1275,
-                                                    "Medical/Dental": 150,
-                                                    Guidance: 100
-                                                }).map(([label, amount], i) => (
-                                                    <tr key={i}>
-                                                        <td className="p-2 border">{label}</td>
-                                                        <td className="p-2 border text-right">{amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                                    </tr>
-                                                ))}
-                                                <tr className="font-bold bg-gray-100">
-                                                    <td className="p-2 border">TOTAL</td>
-                                                    <td className="p-2 border text-right text-green-700">{submittedFees.total_fee.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-
-
-                                )}
-
-                                <p className="text-xs text-gray-600 italic mt-2 text-center">
-                                    NOTE: This is only the expected fee of your enrollment. For the exact amount, you may ask the cashier.
-                                </p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block mb-1">Address</label>
+                                <input name="address" value={formData.address} onChange={handleInput} className="border p-2 rounded w-full" />
                             </div>
-
-
-
-                            <br></br>
-
-                            <div className="flex gap-2">
-                                <button onClick={handlePrintPDF} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-                                    Download PDF
-                                </button>
-                                <button onClick={handleDelete} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                                    Delete
-                                </button>
+                            <div>
+                                <label className="block mb-1">Email</label>
+                                <input type="email" name="email" value={formData.email} onChange={handleInput} className="border p-2 rounded w-full" required />
+                            </div>
+                            <div>
+                                <label className="block mb-1">ID Number</label>
+                                <input name="id_number" value={formData.id_number} onChange={handleInput} className="border p-2 rounded w-full" required />
+                            </div>
+                            <div>
+                                <label className="block mb-1">Program</label>
+                                <select name="program_id" value={formData.program_id} onChange={handleProgramSelect} className="border p-2 rounded w-full" required>
+                                    <option value="">Select Program</option>
+                                    {programs.map(p => (
+                                        <option key={p.program_id} value={p.program_id}>{p.program_name}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block mb-1">Academic Year</label>
+                                <input name="academic_year" value={formData.academic_year} onChange={handleInput} className="border p-2 rounded w-full" required />
+                            </div>
+                            <div>
+                                <label className="block mb-1">Term</label>
+                                <select name="term" value={formData.term} onChange={handleInput} className="border p-2 rounded w-full" required>
+                                    <option value="1st Sem">1st Sem</option>
+                                    <option value="2nd Sem">2nd Sem</option>
+                                    <option value="Midyear">Midyear</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block mb-1">Student Category</label>
+                                <select name="student_category" value={formData.student_category} onChange={handleInput} className="border p-2 rounded w-full" required>
+                                    <option value="New">New</option>
+                                    <option value="Old">Old</option>
+                                    <option value="Trans">Transferee</option>
+                                </select>
                             </div>
                         </div>
-                    )}
+
+                        <div className="mt-4">
+                            <h2 className="font-semibold mb-2">Select Courses</h2>
+                            {courses.length === 0 && (
+                                <div className="text-gray-500 text-sm">No offered courses for this program.</div>
+                            )}
+                            {courses.map(c => (
+                                <label key={c.course_id} className="flex items-start p-2 border rounded mb-2 hover:bg-gray-50 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        className="mt-1 mr-3"
+                                        checked={selected.includes(c.course_id)}
+                                        onChange={() => toggleCourse(c.course_id)}
+                                    />
+                                    <div>
+                                        <div className="font-medium">{c.course_code}</div>
+                                        <div className="text-gray-600 text-sm">{c.course_description}</div>
+                                    </div>
+                                </label>
+                            ))}
+                        </div>
+
+                        <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 mt-2">Submit Form</button>
+                        {message && <p className="text-sm mt-2 text-blue-600">{message}</p>}
+                    </form>
                 </div>
             );
         }
 
-        const roottwo = ReactDOM.createRoot(document.getElementById('roottwo'));
-        roottwo.render(<FullEnrollmentForm />);
+        // ---- Wrapper decides what to show based on status ----
+        function EnrollmentPage() {
+            const [loading, setLoading] = useState(true);
+            const [view, setView] = useState('form'); // 'form' | 'pending' | 'enrolled'
+            const [pendingSnapshot, setPendingSnapshot] = useState(null);
+
+            useEffect(() => {
+                const start = async () => {
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    if (!user?.id) { setLoading(false); return; }
+
+                    try {
+                        const latest = await api(`/api/student/enrollment/latest/${user.id}`);
+                        const status = (latest?.status || '').toLowerCase();
+
+                        if (status === 'pending') {
+                            setView('pending');
+                            setPendingSnapshot({
+                                student: latest.student,       // has name/email/id_number/address/program_id/term/AY/category
+                                courses: latest.courses || []  // [{course_id, course_code, course_description, units}]
+                            });
+                        } else if (status === 'enrolled') {
+                            setView('enrolled');
+                        } else {
+                            setView('form');
+                        }
+                    } catch (e) {
+                        console.error('status check failed', e);
+                        setView('form');
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+                start();
+            }, []);
+
+            if (loading) {
+                return <div className="text-center text-gray-500 mt-20">Checking enrollment status...</div>;
+            }
+
+            if (view === 'enrolled') {
+                return (
+                    <div className="flex items-center justify-center h-full w-full">
+                        <div className="bg-white shadow-lg p-10 rounded-lg text-center max-w-md">
+                            <h2 className="text-2xl font-bold text-green-600 mb-4">You're Officially Enrolled!</h2>
+                            <p className="mb-6 text-gray-600">Welcome! You can now view your academic checklist.</p>
+                            <a href="checklist.html" className="inline-block bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 transition">Go to Checklist</a>
+                        </div>
+                    </div>
+                );
+            }
+
+            // For pending, we still show the confirmation (PDF/Delete) using the same component
+            return <FullEnrollmentForm pendingSnapshot={view === 'pending' ? pendingSnapshot : null} />;
+        }
+
+        // ---- mount ----
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<EnrollmentPage />);
     </script>
 
-    <!-- User Info Script -->
+    <!-- User info -->
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            const loggedUser = JSON.parse(localStorage.getItem('user'));
-            if (loggedUser && loggedUser.email) {
-                document.getElementById("loggedInUser").textContent = loggedUser.email;
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            const u = JSON.parse(localStorage.getItem('user') || '{}');
+            if (u?.email) document.getElementById('loggedInUser').textContent = u.email;
         });
     </script>
 </body>

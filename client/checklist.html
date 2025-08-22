@@ -160,8 +160,9 @@
           <div className="flex min-h-screen">
             {/* Sidebar */}
             <aside className="w-64 bg-gradient-to-b from-green-800 to-emerald-700 text-white flex-shrink-0 flex flex-col">
-              <div className="flex flex-col items-center p-5 border-b border-green-600">
-                <div className="text-2xl font-bold">CGS Portal</div>
+              <div class="flex flex-col items-center p-5 border-b border-green-600">
+                <img src="assets/images/dmmmsu-logo.png" alt="CGS Logo" class="w-28 h-28 mb-2" />
+                <div class="text-2xl font-bold">CGS Portal</div>
               </div>
               <ul className="flex-1 mt-4 space-y-1 px-4">
                 <li><a href="home.html" className="block py-2 px-3 rounded hover:bg-green-700 transition">Home</a></li>
@@ -233,31 +234,15 @@
     }
 
     function ChecklistSection({ title, data, user }) {
-      // Build a safe display name from whatever fields exist
+      // ✅ Always pull name & program from enrollment data if available
       const displayName =
-        (user && (
-          user.full_name ||
-          user.name ||
-          [user.first_name, user.middle_name, user.last_name].filter(Boolean).join(" ") ||
-          user.email
-        )) || "Student Name";
-
-      // Try multiple field names for program; fall back to the first row's program info if present
-      const programFromRow =
-        (data && data.length > 0 && (
-          data[0].program_name ||
-          data[0].program ||
-          data[0].program_code ||
-          data[0].course
-        )) || null;
+        (data && data.length > 0 && data[0].full_name) ||
+        user?.full_name ||
+        "Student Name";
 
       const displayProgram =
-        (user && (
-          user.program_name ||
-          user.program ||
-          user.program_code ||
-          user.course
-        )) || programFromRow || "Program";
+        (data && data.length > 0 && data[0].program_name) ||
+        "Program";
 
       return (
         <div
@@ -273,7 +258,7 @@
                 <p className="text-center">Graduate School - Student Grades</p>
                 <br />
                 <p><strong>Name:</strong> {displayName}</p>
-                <p><strong>Program:</strong> {displayProgram}</p>
+                <p><strong>Program:</strong> {user?.program_name}</p>
               </div>
             </>
           )}
@@ -326,7 +311,6 @@
         </div>
       );
     }
-
 
     const root = ReactDOM.createRoot(document.getElementById("root"));
     root.render(<ChecklistPage />);

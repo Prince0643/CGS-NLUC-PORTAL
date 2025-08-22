@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 10, 2025 at 04:53 PM
+-- Generation Time: Aug 22, 2025 at 09:37 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -87,72 +87,72 @@ CREATE TABLE `courses` (
 --
 
 INSERT INTO `courses` (`course_id`, `course_code`, `program_id`, `course_description`, `units`, `offered`) VALUES
-(1, 'PHEA 301', 1, 'Philosophical and Critical Perspectives in Educational Administration', 3, 'offered'),
-(2, 'PHEA 311', 1, 'Administrative Reforms and Innovations in Education', 3, 'offered'),
+(1, 'PHEA 301', 1, 'Philosophical and Critical Perspectives in Educational Administration', 3, 'not offered'),
+(2, 'PHEA 311', 1, 'Administrative Reforms and Innovations in Education', 3, 'not offered'),
 (3, 'PHEA 314', 1, 'Dissertation Writing', 6, 'offered'),
 (4, 'PHAG 313', 2, 'Program Planning and Project Development', 3, 'offered'),
-(5, 'PHAG 309', 2, 'Advanced Seed Production and Processing', 3, 'offered'),
-(6, 'PHAG 314', 2, 'Dissertation Writing', 6, 'offered'),
-(7, 'PHAS 310', 3, 'Program Planning and Project Development', 3, 'offered'),
-(8, 'PHAS 309', 3, 'Animal Diseases and Parasites', 3, 'offered'),
+(5, 'PHAG 309', 2, 'Advanced Seed Production and Processing', 3, 'not offered'),
+(6, 'PHAG 314', 2, 'Dissertation Writing', 6, 'not offered'),
+(7, 'PHAS 310', 3, 'Program Planning and Project Development', 3, 'not offered'),
+(8, 'PHAS 309', 3, 'Animal Diseases and Parasites', 3, 'not offered'),
 (9, 'PHAS 314', 3, 'Dissertation Writing', 6, 'offered'),
-(10, 'MAEM 202', 4, 'Methods of Research', 3, 'offered'),
-(11, 'MAEM 203', 4, 'Legal Bases of Education', 3, 'offered'),
+(10, 'MAEM 202', 4, 'Methods of Research', 3, 'not offered'),
+(11, 'MAEM 203', 4, 'Legal Bases of Education', 3, 'not offered'),
 (12, 'MAEM 213', 4, 'Thesis Writing 1', 3, 'offered'),
-(13, 'MATL 206', 5, 'Home Economic II (Sustainable Household Consumption)', 3, 'offered'),
-(14, 'MATL 204', 5, 'Administration and Supervision of TLE', 3, 'offered'),
+(13, 'MATL 206', 5, 'Home Economic II (Sustainable Household Consumption)', 3, 'not offered'),
+(14, 'MATL 204', 5, 'Administration and Supervision of TLE', 3, 'not offered'),
 (15, 'MATL 213', 5, 'Thesis Writing', 3, 'offered'),
-(16, 'MSAG 210', 6, 'Advanced Soil Fertility and Fertility Evaluation', 3, 'offered'),
-(17, 'MSAG 203', 6, 'Advanced Farming Systems', 3, 'offered'),
-(18, 'MSAG 213', 6, 'Thesis Writing', 3, 'offered'),
-(19, 'MSAS 209', 7, 'Advanced Farming Systems', 3, 'offered'),
-(20, 'MSAS 208', 7, 'Livestock and Poultry Diseases Parasites', 3, 'offered'),
+(16, 'MSAG 210', 6, 'Advanced Soil Fertility and Fertility Evaluation', 3, 'not offered'),
+(17, 'MSAG 203', 6, 'Advanced Farming Systems', 3, 'not offered'),
+(18, 'MSAG 213', 6, 'Thesis Writing', 3, 'not offered'),
+(19, 'MSAS 209', 7, 'Advanced Farming Systems', 3, 'not offered'),
+(20, 'MSAS 208', 7, 'Livestock and Poultry Diseases Parasites', 3, 'not offered'),
 (21, 'MSAS 213', 7, 'Thesis Writing', 3, 'offered'),
-(22, 'MSES 201', 8, 'Perspectives in Environmental Studies', 3, 'offered'),
-(23, 'MSES 211', 8, 'Environmental Laws & Policies', 3, 'offered'),
+(22, 'MSES 201', 8, 'Perspectives in Environmental Studies', 3, 'not offered'),
+(23, 'MSES 211', 8, 'Environmental Laws & Policies', 3, 'not offered'),
 (24, 'MSES 213', 8, 'Thesis Writing', 3, 'offered'),
-(25, 'MSAF 203', 9, 'Agroforestry Theory, Practice and Adoption', 3, 'offered'),
-(26, 'MSAF 206', 9, 'Silvopasture and Integrated Livestock System', 2, 'offered'),
+(25, 'MSAF 203', 9, 'Agroforestry Theory, Practice and Adoption', 3, 'not offered'),
+(26, 'MSAF 206', 9, 'Silvopasture and Integrated Livestock System', 2, 'not offered'),
 (27, 'MSAF 213', 9, 'Thesis Writing', 3, 'offered'),
-(28, 'MSAM 203', 10, 'Agribusiness Production and Operation Management', 3, 'offered'),
-(29, 'MSAM 210', 10, 'Agricultural Business Risk and Investment', 3, 'offered'),
+(28, 'MSAM 203', 10, 'Agribusiness Production and Operation Management', 3, 'not offered'),
+(29, 'MSAM 210', 10, 'Agricultural Business Risk and Investment', 3, 'not offered'),
 (30, 'MSAM 213', 10, 'Thesis Writing', 3, 'offered'),
-(31, 'MSRD 209', 11, 'Rural Community Institution Building', 3, 'offered'),
-(32, 'MSRD 208', 11, 'Rural Community Development and the Local Government', 3, 'offered'),
+(31, 'MSRD 209', 11, 'Rural Community Institution Building', 3, 'not offered'),
+(32, 'MSRD 208', 11, 'Rural Community Development and the Local Government', 3, 'not offered'),
 (33, 'MSRD 213', 11, 'Thesis Writing', 3, 'offered'),
-(34, 'CCIS 204', 12, 'Information Security', 3, 'offered'),
+(34, 'CCIS 204', 12, 'Information Security', 3, 'not offered'),
 (35, 'MCIS 217', 12, 'Corporate Information Systems Plan', 3, 'offered'),
 (36, 'TWIS 220', 12, 'Thesis Writing', 3, 'offered'),
 (37, 'Seri 300', 13, 'Thesis Writing', 3, 'offered'),
-(38, 'MAEM 200', 4, 'Graduate Seminar', 3, 'not offered'),
+(38, 'MAEM 200', 4, 'Graduate Seminar', 3, 'offered'),
 (44, 'MAEM 201', 4, 'Perspectives in Education', 3, 'not offered'),
 (56, 'MAEM 204', 4, 'Human Resource Management', 3, 'not offered'),
 (57, 'MAEM 205', 4, 'Educational Planning', 3, 'not offered'),
 (58, 'MAEM 206', 4, 'School Finance and Budgeting', 3, 'not offered'),
 (59, 'MAEM 207', 4, 'Organization and Management of Educational Institutions', 3, 'not offered'),
 (60, 'MAEM 208', 4, 'Communication in Educational Management', 3, 'not offered'),
-(61, 'MAEM 209', 4, 'Development and Governance', 3, 'not offered'),
+(61, 'MAEM 209', 4, 'Development and Governance', 3, 'offered'),
 (62, 'MAEM 210', 4, 'Organizational Behavior', 3, 'not offered'),
-(63, 'MAEM 211', 4, 'Trends in Human Public Relation Setting', 3, 'not offered'),
+(63, 'MAEM 211', 4, 'Trends in Human Public Relation Setting', 3, 'offered'),
 (64, 'MAEM 212', 4, 'Theory of Interest', 3, 'not offered'),
 (101, 'MAEM 214', 4, 'Thesis Writing 2', 3, 'not offered'),
 (131, 'MATL 200', 5, 'Graduate Seminar', 3, 'not offered'),
 (132, 'MATL 201', 5, 'Perspectives in Education', 3, 'not offered'),
-(133, 'MATL 202', 5, 'Methods of Research', 3, 'not offered'),
+(133, 'MATL 202', 5, 'Methods of Research', 3, 'offered'),
 (134, 'MATL 203', 5, 'Livelihood Project Feasibility in TLE', 3, 'not offered'),
 (135, 'MATL 205', 5, 'Home Economics I (Family Life Education Programs)', 3, 'not offered'),
-(136, 'MATL 207', 5, 'Agri-fishery Arts I (Farming Systems and Production Management)', 3, 'not offered'),
+(136, 'MATL 207', 5, 'Agri-fishery Arts I (Farming Systems and Production Management)', 3, 'offered'),
 (137, 'MATL 208', 5, 'Agri-fishery Arts II (Principles, Methods, and Trends in Aquaculture)', 3, 'not offered'),
 (138, 'MATL 209', 5, 'ICT I (Advanced Multimedia Applications)', 3, 'not offered'),
 (139, 'MATL 210', 5, 'ICT II (Advanced Web Application Development)', 3, 'not offered'),
-(140, 'MATL 211', 5, 'Industrial Arts I (Industry standards and regulations)', 3, 'not offered'),
+(140, 'MATL 211', 5, 'Industrial Arts I (Industry standards and regulations)', 3, 'offered'),
 (141, 'MATL 212', 5, 'Industrial Arts II (Skills Development Education)', 3, 'not offered'),
 (142, 'MATL 214', 5, 'Thesis Writing 2', 3, 'not offered'),
-(146, 'MSAF 200', 9, 'Graduate Seminar', 3, 'not offered'),
+(146, 'MSAF 200', 9, 'Graduate Seminar', 3, 'offered'),
 (147, 'MSAF 201', 9, 'Perspectives in Agroforestry', 3, 'not offered'),
-(148, 'MSAF 202', 9, 'Methods of Research', 3, 'not offered'),
+(148, 'MSAF 202', 9, 'Methods of Research', 3, 'offered'),
 (149, 'MSAF 204', 9, 'Ecological Basis of Agroforestry', 3, 'not offered'),
-(150, 'MSAF 205', 9, 'Project Development and Management in Agroforestry', 3, 'not offered'),
+(150, 'MSAF 205', 9, 'Project Development and Management in Agroforestry', 3, 'offered'),
 (151, 'MSAF 207', 9, 'Agroforestry Enterprise Development', 3, 'not offered'),
 (152, 'MSAF 208', 9, 'Soil Productivity in Agroforestry', 3, 'not offered'),
 (153, 'MSAF 209', 9, 'Agroforestry Systems Design and Management', 3, 'not offered'),
@@ -172,9 +172,9 @@ INSERT INTO `courses` (`course_id`, `course_code`, `program_id`, `course_descrip
 (170, 'MSAG 211', 6, 'Post Harvest Field Crop Physiology and Technology', 3, 'not offered'),
 (171, 'MSAG 212', 6, 'Advanced Field Crop Processing, Storage and Marketing', 3, 'not offered'),
 (172, 'MSAG 214', 6, 'Thesis Writing 2', 3, 'not offered'),
-(176, 'MSAM 200', 10, 'Graduate Seminar', 3, 'not offered'),
-(177, 'MSAM 201', 10, 'Perspectives in Agribusiness Management', 3, 'not offered'),
-(178, 'MSAM 202', 10, 'Methods of Research', 3, 'not offered'),
+(176, 'MSAM 200', 10, 'Graduate Seminar', 3, 'offered'),
+(177, 'MSAM 201', 10, 'Perspectives in Agribusiness Management', 3, 'offered'),
+(178, 'MSAM 202', 10, 'Methods of Research', 3, 'offered'),
 (179, 'MSAM 204', 10, 'Financial Management Accounting and Control', 3, 'not offered'),
 (180, 'MSAM 205', 10, 'Agribusiness Cooperative & Entrepreneurship Development', 3, 'not offered'),
 (181, 'MSAM 206', 10, 'Personnel Management & Industrial Relations', 3, 'not offered'),
@@ -184,12 +184,12 @@ INSERT INTO `courses` (`course_id`, `course_code`, `program_id`, `course_descrip
 (185, 'MSAM 211', 10, 'Sustainable Agri-Farming Systems', 3, 'not offered'),
 (186, 'MSAM 212', 10, 'Strategic Management in Agribusiness', 3, 'not offered'),
 (187, 'MSAM 214', 10, 'Thesis Writing 2', 3, 'not offered'),
-(191, 'MSES 200', 8, 'Graduate Seminar', 3, 'not offered'),
+(191, 'MSES 200', 8, 'Graduate Seminar', 3, 'offered'),
 (192, 'MSES 202', 8, 'Methods of Research', 3, 'not offered'),
-(193, 'MSES 203', 8, 'Coastal Resources Management', 3, 'not offered'),
+(193, 'MSES 203', 8, 'Coastal Resources Management', 3, 'offered'),
 (194, 'MSES 204', 8, 'Forest Resources Management', 3, 'not offered'),
 (195, 'MSES 205', 8, 'Sustainable Environmental and Development', 3, 'not offered'),
-(196, 'MSES 206', 8, 'Culture and the Environment', 3, 'not offered'),
+(196, 'MSES 206', 8, 'Culture and the Environment', 3, 'offered'),
 (197, 'MSES 207', 8, 'Settlement Systems and Land Use', 3, 'not offered'),
 (198, 'MSES 208', 8, 'Environmental Impact Assessment', 3, 'not offered'),
 (199, 'MSES 209', 8, 'Aquatic Ecosystem', 3, 'not offered'),
@@ -199,13 +199,13 @@ INSERT INTO `courses` (`course_id`, `course_code`, `program_id`, `course_descrip
 (206, 'MSRD 200', 11, 'Graduate Seminar', 3, 'not offered'),
 (207, 'MSRD 201', 11, 'Perspectives in Rural Community Development', 3, 'not offered'),
 (208, 'MSRD 202', 11, 'Methods of Research', 3, 'not offered'),
-(209, 'MSRD 203', 11, 'Rural Sociology', 3, 'not offered'),
+(209, 'MSRD 203', 11, 'Rural Sociology', 3, 'offered'),
 (210, 'MSRD 204', 11, 'Socio-Cultural Innovations', 3, 'not offered'),
 (211, 'MSRD 205', 11, 'Philippine Rural Community Structure and Change', 3, 'not offered'),
 (212, 'MSRD 206', 11, 'Program Planning and Management of Rural Development', 3, 'not offered'),
 (213, 'MSRD 207', 11, 'Evaluation of Rural Community Development', 3, 'not offered'),
-(214, 'MSRD 210', 11, 'Sustainable Agriculture and Development', 3, 'not offered'),
-(215, 'MSRD 211', 11, 'Community and Natural Resources Management', 3, 'not offered'),
+(214, 'MSRD 210', 11, 'Sustainable Agriculture and Development', 3, 'offered'),
+(215, 'MSRD 211', 11, 'Community and Natural Resources Management', 3, 'offered'),
 (216, 'MSRD 212', 11, 'Community and Economic Development', 3, 'not offered'),
 (217, 'MSRD 214', 11, 'Thesis Writing 2', 3, 'not offered'),
 (236, 'CCIS 201', 12, 'Digital Transformation of Organizations', 3, 'not offered'),
@@ -216,10 +216,10 @@ INSERT INTO `courses` (`course_id`, `course_code`, `program_id`, `course_descrip
 (241, 'MCIS 211', 12, 'Enterprise Resource Planning (ERP) – Business Processes', 3, 'not offered'),
 (242, 'MCIS 212', 12, 'Enterprise Resource Planning (ERP) – Customization and configuration', 3, 'not offered'),
 (243, 'MCIS 213', 12, 'Performance Management and Business Intelligence', 3, 'not offered'),
-(244, 'MCIS 214', 12, 'Decision Support and Predictive Analytics', 3, 'not offered'),
+(244, 'MCIS 214', 12, 'Decision Support and Predictive Analytics', 3, 'offered'),
 (245, 'MCIS 215', 12, 'Corporate Information Systems Plan', 3, 'not offered'),
 (246, 'MCIS 216', 12, 'Emerging Technologies and Issues', 3, 'not offered'),
-(247, 'MCIS 218', 12, 'Information Systems Architecture', 3, 'not offered'),
+(247, 'MCIS 218', 12, 'Information Systems Architecture', 3, 'offered'),
 (248, 'MCIS 219', 12, 'Industry Immersion', 3, 'not offered'),
 (249, 'ISBA 102', 12, 'Fundamentals of Enterprise Data Management', 3, 'not offered'),
 (250, 'ISPC 104', 12, 'IT Infrastructure and Network Technologies', 3, 'not offered'),
@@ -228,9 +228,9 @@ INSERT INTO `courses` (`course_id`, `course_code`, `program_id`, `course_descrip
 (253, 'ISPC 112', 12, 'IS Strategy Management & Acquisition', 3, 'not offered'),
 (254, 'ISPC 108', 12, 'Enterprise Systems & Architecture', 3, 'not offered'),
 (255, 'ISPC 109', 12, 'Evaluation of Business Process', 3, 'not offered'),
-(259, 'PHAG 300', 2, 'Graduate Seminar', 3, 'not offered'),
-(260, 'PHAG 301', 2, 'Philosophical and Critical Perspectives in Agronomy', 3, 'not offered'),
-(261, 'PHAG 302', 2, 'Research Designs and Methodologies', 3, 'not offered'),
+(259, 'PHAG 300', 2, 'Graduate Seminar', 3, 'offered'),
+(260, 'PHAG 301', 2, 'Philosophical and Critical Perspectives in Agronomy', 3, 'offered'),
+(261, 'PHAG 302', 2, 'Research Designs and Methodologies', 3, 'offered'),
 (262, 'PHAG 303', 2, 'Knowledge Management in Agronomy', 3, 'not offered'),
 (263, 'PHAG 304', 2, 'Applied Plant Breeding and Population Genetics', 3, 'not offered'),
 (264, 'PHAG 305', 2, 'Seed Science and Technology', 3, 'not offered'),
@@ -241,12 +241,12 @@ INSERT INTO `courses` (`course_id`, `course_code`, `program_id`, `course_descrip
 (269, 'PHAG 311', 2, 'Advanced Plant Growth and Development', 3, 'not offered'),
 (270, 'PHAG 312', 2, 'Sustainable Development', 3, 'not offered'),
 (271, 'PHAG 315', 2, 'Dissertation Writing 2', 6, 'not offered'),
-(275, 'PHAS 300', 3, 'Graduate Seminar', 3, 'not offered'),
-(276, 'PHAS 301', 3, 'Philosophical and Critical Perspectives in Animal Science', 3, 'not offered'),
+(275, 'PHAS 300', 3, 'Graduate Seminar', 3, 'offered'),
+(276, 'PHAS 301', 3, 'Philosophical and Critical Perspectives in Animal Science', 3, 'offered'),
 (277, 'PHAS 302', 3, 'Research Designs and Methodologies', 3, 'not offered'),
 (278, 'PHAS 303', 3, 'Knowledge Management in Animal Science', 3, 'not offered'),
 (279, 'PHAS 304', 3, 'Advanced Ruminant Production', 3, 'not offered'),
-(280, 'PHAS 305', 3, 'Advanced Poultry Production', 3, 'not offered'),
+(280, 'PHAS 305', 3, 'Advanced Poultry Production', 3, 'offered'),
 (281, 'PHAS 306', 3, 'Advanced Swine Production', 3, 'not offered'),
 (282, 'PHAS 307', 3, 'Advanced Forage Production and Pasture Management', 3, 'not offered'),
 (283, 'PHAS 308', 3, 'Exotic and Wild Animal', 3, 'not offered'),
@@ -257,18 +257,21 @@ INSERT INTO `courses` (`course_id`, `course_code`, `program_id`, `course_descrip
 (291, 'PHEA 300', 1, 'Graduate Seminar', 3, 'not offered'),
 (292, 'PHEA 302', 1, 'Research Designs and Methodology', 3, 'not offered'),
 (293, 'PHEA 303', 1, 'Knowledge Management in Educational Administration', 3, 'not offered'),
-(294, 'PHEA 304', 1, 'Theories & Practices in Administration & Supervision', 3, 'not offered'),
+(294, 'PHEA 304', 1, 'Theories & Practices in Administration & Supervision', 3, 'offered'),
 (295, 'PHEA 305', 1, 'Qualitative Research Methods in Educational Administration and Organization Development', 3, 'not offered'),
 (296, 'PHEA 306', 1, 'Educational Leadership', 3, 'not offered'),
 (297, 'PHEA 307', 1, 'Legal Issues and Administrative Policies in Education', 3, 'not offered'),
 (298, 'PHEA 308', 1, 'Systems Analysis in Education', 3, 'not offered'),
-(299, 'PHEA 309', 1, 'Economics of Education: Fiscal Administration', 3, 'not offered'),
-(300, 'PHEA 310', 1, 'Trends and Issues in Educational Planning', 3, 'not offered'),
+(299, 'PHEA 309', 1, 'Economics of Education: Fiscal Administration', 3, 'offered'),
+(300, 'PHEA 310', 1, 'Trends and Issues in Educational Planning', 3, 'offered'),
 (301, 'PHEA 312', 1, 'Quantitative Research Methods in Educational Administration and Organization Development', 3, 'not offered'),
 (302, 'PHEA 313', 1, 'Methodology and Supervision of Higher Education', 3, 'not offered'),
 (303, 'PHEA 315', 1, 'Environmental Planning and Management for Sustainable Development', 3, 'not offered'),
 (304, 'PHEA 316', 1, 'Dissertation Writing 1', 6, 'not offered'),
-(305, 'PHEA 317', 1, 'Dissertation Writing 2', 6, 'not offered');
+(305, 'PHEA 317', 1, 'Dissertation Writing 2', 6, 'not offered'),
+(306, 'MSAS 201', 7, 'Perspectives in Animal Science', 3, 'offered'),
+(307, 'MSAS 204', 7, 'Advanced Poultry Production', 3, 'offered'),
+(308, 'MSAS 206', 7, 'Sustainable Agriculture', 3, 'offered');
 
 -- --------------------------------------------------------
 
@@ -286,44 +289,19 @@ CREATE TABLE `course_faculty` (
 --
 
 INSERT INTO `course_faculty` (`course_id`, `faculty_id`) VALUES
-(1, 1),
-(2, 2),
-(3, 3),
-(4, 4),
-(5, 5),
-(6, 3),
-(7, 4),
-(8, 6),
-(9, 3),
-(10, 7),
-(11, 8),
-(12, 3),
-(13, 9),
-(14, 1),
-(14, 9),
-(15, 3),
-(16, 10),
-(17, 5),
-(18, 3),
-(19, 6),
-(20, 6),
-(21, 3),
-(22, 11),
-(23, 12),
-(24, 3),
-(25, 13),
-(26, 14),
-(27, 3),
-(28, 15),
-(29, 16),
-(30, 3),
-(31, 17),
-(32, 17),
-(33, 3),
-(34, 18),
-(35, 19),
-(36, 3),
-(37, 3);
+(4, 22),
+(19, 4),
+(19, 20),
+(38, 22),
+(61, 2),
+(63, 24),
+(259, 23),
+(260, 5),
+(275, 22),
+(280, 4),
+(294, 1),
+(299, 2),
+(300, 21);
 
 -- --------------------------------------------------------
 
@@ -338,13 +316,9 @@ CREATE TABLE `enrollments` (
   `term` varchar(10) NOT NULL,
   `academic_year` varchar(10) NOT NULL,
   `student_category` varchar(4) NOT NULL,
-  `status` enum('pending','enrolled','rejected') DEFAULT 'pending',
-  `id_number` varchar(50) DEFAULT NULL,
+  `status` enum('pending','enrolled','rejected','completed') DEFAULT 'pending',
   `date_applied` timestamp NOT NULL DEFAULT current_timestamp(),
-  `full_name` varchar(100) DEFAULT NULL,
-  `email` varchar(100) DEFAULT NULL,
   `address` text DEFAULT NULL,
-  `program` varchar(100) DEFAULT NULL,
   `student_name` varchar(255) DEFAULT NULL,
   `student_email` varchar(255) DEFAULT NULL,
   `student_id_number` varchar(50) DEFAULT NULL,
@@ -355,13 +329,16 @@ CREATE TABLE `enrollments` (
 -- Dumping data for table `enrollments`
 --
 
-INSERT INTO `enrollments` (`enrollment_id`, `student_id`, `course_id`, `term`, `academic_year`, `student_category`, `status`, `id_number`, `date_applied`, `full_name`, `email`, `address`, `program`, `student_name`, `student_email`, `student_id_number`, `program_id`) VALUES
-(334, 15, 31, '1st Sem', '2025-2026', 'Old', 'pending', NULL, '2025-07-04 12:06:45', NULL, NULL, 'Pagdalagan, San Fernando City, La Union', NULL, 'Mark Morillo Quinitip', 'mark@gmail.com', '211-1003-6', 11),
-(335, 15, 32, '1st Sem', '2025-2026', 'Old', 'pending', NULL, '2025-07-04 12:06:45', NULL, NULL, 'Pagdalagan, San Fernando City, La Union', NULL, 'Mark Morillo Quinitip', 'mark@gmail.com', '211-1003-6', 11),
-(336, 15, 33, '1st Sem', '2025-2026', 'Old', 'pending', NULL, '2025-07-04 12:06:45', NULL, NULL, 'Pagdalagan, San Fernando City, La Union', NULL, 'Mark Morillo Quinitip', 'mark@gmail.com', '211-1003-6', 11),
-(337, 14, 13, '1st Sem', '2025-2026', 'New', 'enrolled', NULL, '2025-07-04 13:34:47', NULL, NULL, 'Sevilla, San Fernando City, La Union', NULL, 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 5),
-(338, 14, 14, '1st Sem', '2025-2026', 'New', 'enrolled', NULL, '2025-07-04 13:34:47', NULL, NULL, 'Sevilla, San Fernando City, La Union', NULL, 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 5),
-(339, 14, 15, '1st Sem', '2025-2026', 'New', 'enrolled', NULL, '2025-07-04 13:34:47', NULL, NULL, 'Sevilla, San Fernando City, La Union', NULL, 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 5);
+INSERT INTO `enrollments` (`enrollment_id`, `student_id`, `course_id`, `term`, `academic_year`, `student_category`, `status`, `date_applied`, `address`, `student_name`, `student_email`, `student_id_number`, `program_id`) VALUES
+(334, 15, 31, '1st Sem', '2025-2026', 'Old', 'completed', '2025-07-04 12:06:45', 'Pagdalagan, San Fernando City, La Union', 'Mark Morillo Quinitip', 'mark@gmail.com', '211-1003-6', 11),
+(335, 15, 32, '1st Sem', '2025-2026', 'Old', 'completed', '2025-07-04 12:06:45', 'Pagdalagan, San Fernando City, La Union', 'Mark Morillo Quinitip', 'mark@gmail.com', '211-1003-6', 11),
+(336, 15, 33, '1st Sem', '2025-2026', 'Old', 'completed', '2025-07-04 12:06:45', 'Pagdalagan, San Fernando City, La Union', 'Mark Morillo Quinitip', 'mark@gmail.com', '211-1003-6', 11),
+(343, 14, 19, '1st Sem', '2025-2026', 'New', 'enrolled', '2025-08-22 06:09:43', 'Sevilla ', 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 7),
+(344, 14, 20, '1st Sem', '2025-2026', 'New', 'enrolled', '2025-08-22 06:09:43', 'Sevilla ', 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 7),
+(345, 14, 21, '1st Sem', '2025-2026', 'New', 'enrolled', '2025-08-22 06:09:43', 'Sevilla ', 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 7),
+(349, 14, 306, '2nd Sem', '2025-2026', 'Old', 'enrolled', '2025-08-22 07:15:24', 'Sevilla ', 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 7),
+(350, 14, 307, '2nd Sem', '2025-2026', 'Old', 'enrolled', '2025-08-22 07:15:24', 'Sevilla ', 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 7),
+(351, 14, 308, '2nd Sem', '2025-2026', 'Old', 'enrolled', '2025-08-22 07:15:24', 'Sevilla ', 'Bianca Mairah', 'bianca@gmail.com', '211-1003-5', 7);
 
 -- --------------------------------------------------------
 
@@ -385,7 +362,9 @@ CREATE TABLE `enrollment_fees` (
 
 INSERT INTO `enrollment_fees` (`id`, `student_id`, `total_units`, `tuition_fee`, `misc_fee`, `total_fee`, `created_at`) VALUES
 (3, 15, 9, 3600.00, 3175.00, 6775.00, '2025-07-04 12:06:45'),
-(4, 14, 9, 3600.00, 3375.00, 6975.00, '2025-07-04 13:34:47');
+(6, 14, 9, 3600.00, 3375.00, 6975.00, '2025-08-22 06:09:43'),
+(7, 14, 9, 3600.00, 3175.00, 6775.00, '2025-08-22 06:28:43'),
+(8, 14, 9, 3600.00, 3375.00, 6975.00, '2025-08-22 07:15:24');
 
 -- --------------------------------------------------------
 
@@ -404,25 +383,30 @@ CREATE TABLE `faculty` (
 --
 
 INSERT INTO `faculty` (`faculty_id`, `name`, `user_id`) VALUES
-(1, 'GSNisperos', NULL),
+(1, 'GSNisperos', 24),
 (2, 'JRETabafunda', NULL),
-(3, 'TBA', NULL),
-(4, 'PPFontanilla', NULL),
+(3, 'TBA', 25),
+(4, 'PPFontanilla', 26),
 (5, 'AVSagun', 17),
-(6, 'FMCamalig', NULL),
+(6, 'FMCamalig', 23),
 (7, 'MBMendoza', NULL),
-(8, 'DPLicay', NULL),
+(8, 'DPLicay', 21),
 (9, 'NBTugelida', 18),
 (10, 'VMLibunao', NULL),
 (11, 'JJCAndrada', NULL),
-(12, 'DAVilar', NULL),
+(12, 'DAVilar', 20),
 (13, 'LDGavina', NULL),
 (14, 'JCortado', NULL),
 (15, 'AGLaquidan', 16),
 (16, 'JNQuinquito', NULL),
 (17, 'GTBondot', NULL),
-(18, 'DANeri', NULL),
-(19, 'ECEbuenga', NULL);
+(18, 'DANeri', 19),
+(19, 'ECEbuenga', 22),
+(20, 'JMGarcia', 27),
+(21, 'GFlora', NULL),
+(22, 'AOOgbinar', NULL),
+(23, 'ATGonzales', NULL),
+(24, 'JMSanchez', NULL);
 
 -- --------------------------------------------------------
 
@@ -433,6 +417,9 @@ INSERT INTO `faculty` (`faculty_id`, `name`, `user_id`) VALUES
 CREATE TABLE `grades` (
   `grade_id` int(11) NOT NULL,
   `enrollment_id` int(11) NOT NULL,
+  `student_name` varchar(255) NOT NULL,
+  `academic_year` varchar(20) NOT NULL,
+  `term` enum('1st Semester','2nd Semester','Summer') NOT NULL,
   `grade` varchar(10) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -442,9 +429,11 @@ CREATE TABLE `grades` (
 -- Dumping data for table `grades`
 --
 
-INSERT INTO `grades` (`grade_id`, `enrollment_id`, `grade`, `created_at`, `updated_at`) VALUES
-(1, 337, '89', '2025-08-08 06:04:35', '2025-08-08 06:04:35'),
-(2, 338, '92', '2025-08-08 06:05:42', '2025-08-08 06:05:42');
+INSERT INTO `grades` (`grade_id`, `enrollment_id`, `student_name`, `academic_year`, `term`, `grade`, `created_at`, `updated_at`) VALUES
+(4, 336, 'Mark Morillo Quinitip', '2024-2025', '1st Semester', '56', '2025-08-21 05:24:37', '2025-08-21 11:23:21'),
+(5, 343, 'Bianca Mairah', '2024-2025', '1st Semester', '89', '2025-08-22 06:12:41', '2025-08-22 06:12:41'),
+(6, 344, 'Bianca Mairah', '2024-2025', '1st Semester', '92', '2025-08-22 06:12:49', '2025-08-22 06:12:49'),
+(7, 345, 'Bianca Mairah', '2024-2025', '1st Semester', '78', '2025-08-22 06:13:38', '2025-08-22 06:13:38');
 
 -- --------------------------------------------------------
 
@@ -465,7 +454,100 @@ CREATE TABLE `logs` (
 --
 
 INSERT INTO `logs` (`id`, `user_id`, `action`, `details`, `created_at`) VALUES
-(1, NULL, 'Backup', 'Database backup downloaded', '2025-08-10 14:31:08');
+(1, NULL, 'Backup', 'Database backup downloaded', '2025-08-10 14:31:08'),
+(2, 14, 'Login', 'User bianca@gmail.com logged in', '2025-08-21 03:43:25'),
+(3, 6, 'Login', 'User admin2@cgs.edu logged in', '2025-08-21 03:45:51'),
+(4, 6, 'Login', 'User admin2@cgs.edu logged in', '2025-08-21 03:59:33'),
+(5, 6, 'Login', 'User admin2@cgs.edu logged in', '2025-08-21 04:09:28'),
+(6, NULL, 'Faculty', 'Created faculty account for DPLicay', '2025-08-21 04:14:01'),
+(7, 14, 'Login', 'User bianca@gmail.com logged in', '2025-08-21 04:30:28'),
+(8, 18, 'Login', 'User nbtugelida@gmail.com logged in', '2025-08-21 04:31:42'),
+(9, 6, 'Login', 'User admin2@cgs.edu logged in', '2025-08-21 04:34:03'),
+(10, 14, 'Login', 'User bianca@gmail.com logged in', '2025-08-21 04:34:52'),
+(11, 6, 'Login', 'User admin2@cgs.edu logged in', '2025-08-21 04:43:22'),
+(12, 6, 'Login', 'User admin2@cgs.edu logged in', '2025-08-21 04:58:38'),
+(13, NULL, 'Faculty', 'Created faculty account for ECEbuenga', '2025-08-21 04:59:11'),
+(14, 14, 'Login', 'User bianca@gmail.com logged in', '2025-08-21 05:02:56'),
+(15, 6, 'Login', 'User admin2@cgs.edu logged in', '2025-08-21 05:06:32'),
+(16, NULL, 'Faculty Created', 'Created faculty account for GSNisperos', '2025-08-21 05:09:00'),
+(17, 14, 'Login', 'User bianca@gmail.com logged in', '2025-08-21 05:14:09'),
+(18, 6, 'Login', 'User admin2@cgs.edu logged in', '2025-08-21 05:23:51'),
+(19, NULL, 'Faculty Created', 'Created faculty account for TBA', '2025-08-21 05:24:08'),
+(20, 25, 'Login', 'User tba@gmail.com logged in', '2025-08-21 05:24:17'),
+(21, 14, 'Login', 'User bianca@gmail.com logged in', '2025-08-21 05:24:47'),
+(22, 18, 'Login', 'User nbtugelida@gmail.com logged in', '2025-08-21 11:02:14'),
+(23, 18, 'Login', 'User nbtugelida@gmail.com logged in', '2025-08-21 11:05:41'),
+(24, 25, 'Login', 'User tba@gmail.com logged in', '2025-08-21 11:23:15'),
+(25, 14, 'Login', 'User bianca@gmail.com logged in', '2025-08-21 11:24:03'),
+(26, 14, 'Login', 'User bianca@gmail.com logged in', '2025-08-22 04:30:02'),
+(27, 14, 'Login', 'User bianca@gmail.com logged in', '2025-08-22 04:36:19'),
+(28, 14, 'Login', 'User bianca@gmail.com logged in', '2025-08-22 05:38:34'),
+(29, NULL, 'Course Status Update', 'Set course 294 to undefined', '2025-08-22 06:19:40'),
+(30, NULL, 'Course Status Update', 'Set course 299 to undefined', '2025-08-22 06:19:43'),
+(31, NULL, 'Course Status Update', 'Set course 3 to undefined', '2025-08-22 06:19:53'),
+(32, NULL, 'Course Status Update', 'Set course 300 to undefined', '2025-08-22 06:20:00'),
+(33, NULL, 'Course Status Update', 'Set course 1 to undefined', '2025-08-22 06:20:12'),
+(34, NULL, 'Course Status Update', 'Set course 259 to undefined', '2025-08-22 06:20:39'),
+(35, NULL, 'Course Status Update', 'Set course 261 to undefined', '2025-08-22 06:20:46'),
+(36, NULL, 'Course Status Update', 'Set course 260 to undefined', '2025-08-22 06:20:48'),
+(37, NULL, 'Course Status Update', 'Set course 4 to undefined', '2025-08-22 06:20:53'),
+(38, NULL, 'Course Status Update', 'Set course 280 to undefined', '2025-08-22 06:21:12'),
+(39, NULL, 'Course Status Update', 'Set course 275 to undefined', '2025-08-22 06:21:18'),
+(40, NULL, 'Course Status Update', 'Set course 276 to undefined', '2025-08-22 06:21:20'),
+(41, NULL, 'Course Status Update', 'Set course 9 to undefined', '2025-08-22 06:21:26'),
+(42, NULL, 'Course Status Update', 'Set course 38 to undefined', '2025-08-22 06:21:41'),
+(43, NULL, 'Course Status Update', 'Set course 61 to undefined', '2025-08-22 06:21:44'),
+(44, NULL, 'Course Status Update', 'Set course 63 to undefined', '2025-08-22 06:21:58'),
+(45, NULL, 'Course Status Update', 'Set course 12 to undefined', '2025-08-22 06:22:05'),
+(46, NULL, 'Course Status Update', 'Set course 133 to undefined', '2025-08-22 06:22:16'),
+(47, NULL, 'Course Status Update', 'Set course 136 to undefined', '2025-08-22 06:22:26'),
+(48, NULL, 'Course Status Update', 'Set course 140 to undefined', '2025-08-22 06:22:31'),
+(49, NULL, 'Course Status Update', 'Set course 15 to undefined', '2025-08-22 06:22:34'),
+(50, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 11-2S and faculty undefined to course 299', '2025-08-22 06:23:53'),
+(51, NULL, 'Course Status Update', 'Set course 19 to undefined', '2025-08-22 06:27:00'),
+(52, NULL, 'Course Status Update', 'Set course 20 to undefined', '2025-08-22 06:27:01'),
+(53, NULL, 'Course Status Update', 'Set course 21 to undefined', '2025-08-22 06:27:02'),
+(54, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 11-2S and faculty undefined to course 19', '2025-08-22 06:27:41'),
+(55, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 2-5S and faculty undefined to course 19', '2025-08-22 06:28:05'),
+(56, NULL, 'Faculty Created', 'Created faculty account for PPFontanilla', '2025-08-22 06:31:13'),
+(57, NULL, 'Faculty Created', 'Created faculty account for JMGarcia', '2025-08-22 06:31:31'),
+(58, NULL, 'Course Status Update', 'Set course 19 to undefined', '2025-08-22 06:54:29'),
+(59, NULL, 'Course Status Update', 'Set course 20 to undefined', '2025-08-22 06:54:31'),
+(60, NULL, 'Course Status Update', 'Set course 21 to undefined', '2025-08-22 06:54:32'),
+(61, NULL, 'Course Status Update', 'Set course 21 to undefined', '2025-08-22 06:55:41'),
+(62, NULL, 'Course Status Update', 'Set course 191 to undefined', '2025-08-22 06:55:53'),
+(63, NULL, 'Course Status Update', 'Set course 193 to undefined', '2025-08-22 06:55:58'),
+(64, NULL, 'Course Status Update', 'Set course 196 to undefined', '2025-08-22 06:56:02'),
+(65, NULL, 'Course Status Update', 'Set course 24 to undefined', '2025-08-22 06:56:16'),
+(66, NULL, 'Course Status Update', 'Set course 146 to undefined', '2025-08-22 06:56:27'),
+(67, NULL, 'Course Status Update', 'Set course 148 to undefined', '2025-08-22 06:56:57'),
+(68, NULL, 'Course Status Update', 'Set course 150 to undefined', '2025-08-22 06:57:08'),
+(69, NULL, 'Course Status Update', 'Set course 27 to undefined', '2025-08-22 06:57:14'),
+(70, NULL, 'Course Status Update', 'Set course 176 to undefined', '2025-08-22 06:57:29'),
+(71, NULL, 'Course Status Update', 'Set course 177 to undefined', '2025-08-22 06:57:36'),
+(72, NULL, 'Course Status Update', 'Set course 178 to undefined', '2025-08-22 06:57:39'),
+(73, NULL, 'Course Status Update', 'Set course 30 to undefined', '2025-08-22 06:57:45'),
+(74, NULL, 'Course Status Update', 'Set course 209 to undefined', '2025-08-22 06:58:06'),
+(75, NULL, 'Course Status Update', 'Set course 214 to undefined', '2025-08-22 06:58:18'),
+(76, NULL, 'Course Status Update', 'Set course 215 to undefined', '2025-08-22 06:58:22'),
+(77, NULL, 'Course Status Update', 'Set course 33 to undefined', '2025-08-22 06:58:25'),
+(78, NULL, 'Course Status Update', 'Set course 244 to undefined', '2025-08-22 06:58:39'),
+(79, NULL, 'Course Status Update', 'Set course 35 to undefined', '2025-08-22 06:58:58'),
+(80, NULL, 'Course Status Update', 'Set course 247 to undefined', '2025-08-22 06:59:10'),
+(81, NULL, 'Course Status Update', 'Set course 36 to undefined', '2025-08-22 06:59:24'),
+(82, NULL, 'Course Status Update', 'Set course 37 to undefined', '2025-08-22 06:59:32'),
+(83, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 8-11S and faculty undefined to course 300', '2025-08-22 06:59:58'),
+(84, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 2-5S and faculty undefined to course 294', '2025-08-22 07:00:17'),
+(85, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 11-2S and faculty undefined to course 299', '2025-08-22 07:00:35'),
+(86, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 11-2S and faculty undefined to course 299', '2025-08-22 07:00:38'),
+(87, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 8-12S and faculty undefined to course 4', '2025-08-22 07:05:47'),
+(88, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 2-5S and faculty undefined to course 259', '2025-08-22 07:06:21'),
+(89, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 8-11S and faculty undefined to course 260', '2025-08-22 07:06:33'),
+(90, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 11-2S and faculty undefined to course 275', '2025-08-22 07:07:25'),
+(91, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 2-5S and faculty undefined to course 280', '2025-08-22 07:08:09'),
+(92, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 11-2S and faculty undefined to course 38', '2025-08-22 07:08:35'),
+(93, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 8-11S and faculty undefined to course 61', '2025-08-22 07:08:54'),
+(94, NULL, 'Schedule/Faculty Assignment', 'Assigned schedule 2-5S and faculty undefined to course 63', '2025-08-22 07:09:14');
 
 -- --------------------------------------------------------
 
@@ -515,90 +597,19 @@ CREATE TABLE `schedules` (
 --
 
 INSERT INTO `schedules` (`schedule_id`, `course_id`, `day_time`) VALUES
-(1, 1, '8-12S'),
-(2, 1, '5:30-8:30W'),
-(3, 1, '5:30-7:30F'),
-(4, 2, '1-5S'),
-(5, 2, '5:30-8:30T'),
-(6, 2, '5:30-7:30Th'),
-(7, 3, 'TBA'),
-(8, 4, '8-12S'),
-(9, 4, '5:30-8:30W'),
-(10, 4, '5:30-7:30F'),
-(11, 5, '1-5S'),
-(12, 5, '5:30-8:30T'),
-(13, 5, '5:30-7:30Th'),
-(14, 6, 'TBA'),
-(15, 7, '8-12S'),
-(16, 7, '5:30-8:30W'),
-(17, 7, '5:30-7:30F'),
-(18, 8, '1-5S'),
-(19, 8, '5:30-8:30T'),
-(20, 8, '5:30-7:30Th'),
-(21, 9, 'TBA'),
-(22, 10, '8-12S'),
-(23, 10, '5:30-8:30W'),
-(24, 10, '5:30-7:30F'),
-(25, 11, '1-5S'),
-(26, 11, '5:30-8:30T'),
-(27, 11, '5:30-7:30Th'),
-(28, 12, 'TBA'),
-(29, 13, '8-12S'),
-(30, 13, '5:30-8:30W'),
-(31, 13, '5:30-7:30F'),
-(32, 14, '1-5S'),
-(33, 14, '5:30-8:30T'),
-(34, 14, '5:30-7:30Th'),
-(35, 15, 'TBA'),
-(36, 16, '8-12S'),
-(37, 16, '5:30-8:30W'),
-(38, 16, '5:30-7:30F'),
-(39, 17, '1-5S'),
-(40, 17, '5:30-8:30T'),
-(41, 17, '5:30-7:30Th'),
-(42, 18, 'TBA'),
-(43, 19, '1-6S'),
-(44, 19, '5:30-8:30T'),
-(45, 20, '8-12S'),
-(46, 20, '5:30-8:30W'),
-(47, 20, '5:30-7:30F'),
-(48, 21, 'TBA'),
-(49, 22, '8-12S'),
-(50, 22, '5:30-8:30W'),
-(51, 22, '5:30-7:30F'),
-(52, 23, '1-5S'),
-(53, 23, '5:30-8:30T'),
-(54, 23, '5:30-7:30Th'),
-(55, 24, 'TBA'),
-(56, 25, '8-12S'),
-(57, 25, '5:30-8:30W'),
-(58, 25, '5:30-7:30F'),
-(59, 26, '1-5S'),
-(60, 26, '5:30-8:30T'),
-(61, 26, '5:30-7:30Th'),
-(62, 27, 'TBA'),
-(63, 28, '8-12S'),
-(64, 28, '5:30-8:30W'),
-(65, 28, '5:30-7:30F'),
-(66, 29, '1-5S'),
-(67, 29, '5:30-8:30T'),
-(68, 29, '5:30-7:30Th'),
-(69, 30, 'TBA'),
-(70, 31, '8-12S'),
-(71, 31, '5:30-8:30W'),
-(72, 31, '5:30-7:30F'),
-(73, 32, '1-5S'),
-(74, 32, '5:30-8:30T'),
-(75, 32, '5:30-7:30Th'),
-(76, 33, 'TBA'),
-(77, 34, '1-5S'),
-(78, 34, '5:30-8:30T'),
-(79, 34, '5:30-7:30Th'),
-(80, 35, '8-12S'),
-(81, 35, '5:30-8:30W'),
-(82, 35, '5:30-7:30F'),
-(83, 36, 'TBA'),
-(84, 37, 'TBA');
+(85, 299, '11-2S'),
+(86, 19, '11-2S'),
+(87, 19, '2-5S'),
+(88, 300, '8-11S'),
+(89, 294, '2-5S'),
+(92, 4, '8-12S'),
+(93, 259, '2-5S'),
+(94, 260, '8-11S'),
+(95, 275, '11-2S'),
+(96, 280, '2-5S'),
+(97, 38, '11-2S'),
+(98, 61, '8-11S'),
+(99, 63, '2-5S');
 
 -- --------------------------------------------------------
 
@@ -623,15 +634,24 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `email`, `password`, `full_name`, `created_at`, `user_level`, `program_id`) VALUES
 (4, 'tolentino@gmail.com', '$2b$10$C8T1WMh7VEYNcmz2UEn1yOJQhwfy7vnHXlLCdWBHO10iVLIm8AY4y', '', '2025-06-24 13:29:30', 'student', NULL),
 (6, 'admin2@cgs.edu', '$2b$10$RhVLs/JwrUyGaC/7ZvftD.hggvXtffTUsu4pQrbk8qfnGxhpO3hgy', '', '2025-06-25 16:26:09', 'admin', NULL),
-(7, 'msis.student@cgs.edu', 'password123', '', '2025-06-28 07:04:15', 'student', NULL),
+(7, 'msis.student@cgs.edu', 'password123', '', '2025-06-28 07:04:15', 'student', 1),
 (11, 'tolen@gmail.com', '$2b$10$4kXdclLy1gYvdnslIhhDgelL2lUxdZc8HLU6ObqBlip0IaTvno.Jy', '', '2025-06-30 07:51:34', 'student', NULL),
 (12, 'tolentinochristian89@gmail.com', '$2b$10$mNfLLKuEPmBqx7cIr62PoOOGnQuEICPqS0Gsunlq6jqO/rzO6WStO', '', '2025-06-30 10:03:56', 'student', NULL),
 (13, 'prence@gmail.com', '$2b$10$FNO0JFizImtzMS8jL2VuCexsgbRM1/JFpUiuexhXw.gjA2YvEurOG', '', '2025-06-30 14:57:16', 'student', NULL),
-(14, 'bianca@gmail.com', '$2b$10$gMdc7QlJw8mGsxXwKIrSR.ZtbXQjU2qwzH6hxGOIQljWQfkvRDr/u', 'Bianca Mairah', '2025-06-30 15:30:10', 'student', NULL),
-(15, 'mark@gmail.com', '$2b$10$12haxuMG42A0O8JBMnhSBeoHVyy3cyGhNzVM4oyRD/lqj706QERG6', 'Mark Morillo Quinitip', '2025-07-04 12:05:54', 'student', NULL),
+(14, 'bianca@gmail.com', '$2b$10$gMdc7QlJw8mGsxXwKIrSR.ZtbXQjU2qwzH6hxGOIQljWQfkvRDr/u', 'Bianca Mairah', '2025-06-30 15:30:10', 'student', 7),
+(15, 'mark@gmail.com', '$2b$10$12haxuMG42A0O8JBMnhSBeoHVyy3cyGhNzVM4oyRD/lqj706QERG6', 'Mark Morillo Quinitip', '2025-07-04 12:05:54', 'student', 3),
 (16, 'aglaquidan@gmail.com', '$2b$10$M85TFcZONVbqzUYBTX5lI.cUiut7xKjSZqnf2ccruM.rHxQ4iXNRm', 'AGLaquidan', '2025-08-07 15:06:08', 'teacher', NULL),
 (17, 'avsagun@gmail.com', '$2b$10$CuDg/lSKzW0WVWVdoPVE.Oe0BC0h5J8cz3jrtot98FGa5DxfBMYEa', 'AVSagun', '2025-08-08 05:32:57', 'teacher', NULL),
-(18, 'nbtugelida@gmail.com', '$2b$10$DDob9R2x8ChvbMZt4MY7yethQmwvegTWmXXDvFZqdfl8FPmsmu8fK', 'NBTugelida', '2025-08-08 05:55:28', 'teacher', NULL);
+(18, 'nbtugelida@gmail.com', '$2b$10$DDob9R2x8ChvbMZt4MY7yethQmwvegTWmXXDvFZqdfl8FPmsmu8fK', 'NBTugelida', '2025-08-08 05:55:28', 'teacher', NULL),
+(19, 'daneri@gmail.com', '$2b$10$96XdC.gHPJqLxuEOx6QfdubV0S5Byx/yQQPRJuRiQUaZ.h7imNKES', 'DANeri', '2025-08-21 03:46:09', 'teacher', NULL),
+(20, 'davilar@gmail.com', '$2b$10$6deDClXxW.Dc2jWh34aoJ.79VF1Z9sX8PWtcfYyV/PDKkkx4Pd0HW', 'DAVilar', '2025-08-21 04:09:44', 'teacher', NULL),
+(21, 'dplicay@gmail.com', '$2b$10$IU17aLd87T0WrPHvjZvrzeIIu774bvv9ael13eq7XLH/J0Vn9AwJG', 'DPLicay', '2025-08-21 04:14:01', 'teacher', NULL),
+(22, 'ecebuenga@gmail.com', '$2b$10$ZWyt4ZU66w/BcXqHpQM8iOh46al1fot8pGdXJQPmgv2i3fWE/YnWq', 'ECEbuenga', '2025-08-21 04:59:11', 'teacher', NULL),
+(23, 'fmcamalig@gmail.com', '$2b$10$tg7GCdFDV6warZKSazXrnOhj5LGTlqMSgaiqpdge6V7wxhViWHE1m', 'FMCamalig', '2025-08-21 05:07:37', 'teacher', NULL),
+(24, 'gsnisperos@gmail.com', '$2b$10$o9OP1Q4j5fB9SiLeklzbde9ftVgYsO5HAb7XgVIArK7o.hX1yQF42', 'GSNisperos', '2025-08-21 05:09:00', 'teacher', NULL),
+(25, 'tba@gmail.com', '$2b$10$C7qXrPwNP63ZZAhfj6W7/eMY3i0SV5XXVnmSfOcpiznTu0DFVz4ju', 'TBA', '2025-08-21 05:24:08', 'teacher', NULL),
+(26, 'ppfontanilla@gmail.com', '$2b$10$LgEHpm2fs5Muczd8tf/KIOZV03cC7gznop9APt02qS3R4qzN22TGe', 'PPFontanilla', '2025-08-22 06:31:13', 'teacher', NULL),
+(27, 'jmgarcia@gmail.com', '$2b$10$OrSWl.SFM/QShFviafPjq.6KPP0KUWxJyKqXuD/QhTt5r.JjMWVke', 'JMGarcia', '2025-08-22 06:31:31', 'teacher', NULL);
 
 --
 -- Indexes for dumped tables
@@ -745,37 +765,37 @@ ALTER TABLE `chatbot_responses`
 -- AUTO_INCREMENT for table `courses`
 --
 ALTER TABLE `courses`
-  MODIFY `course_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=306;
+  MODIFY `course_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=309;
 
 --
 -- AUTO_INCREMENT for table `enrollments`
 --
 ALTER TABLE `enrollments`
-  MODIFY `enrollment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=340;
+  MODIFY `enrollment_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=352;
 
 --
 -- AUTO_INCREMENT for table `enrollment_fees`
 --
 ALTER TABLE `enrollment_fees`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `faculty`
 --
 ALTER TABLE `faculty`
-  MODIFY `faculty_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `faculty_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `grades`
 --
 ALTER TABLE `grades`
-  MODIFY `grade_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `grade_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `logs`
 --
 ALTER TABLE `logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=95;
 
 --
 -- AUTO_INCREMENT for table `programs`
@@ -787,13 +807,13 @@ ALTER TABLE `programs`
 -- AUTO_INCREMENT for table `schedules`
 --
 ALTER TABLE `schedules`
-  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=85;
+  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=100;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- Constraints for dumped tables
