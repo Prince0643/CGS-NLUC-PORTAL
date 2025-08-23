@@ -81,7 +81,7 @@ app.post("/api/login", async (req, res) => {
 
     try {
         const [rows] = await pool.query(
-            `SELECT u.id, u.email, u.full_name, u.user_level, u.program_id, u.password,
+            `SELECT u.id, u.email, u.full_name, u.user_level, u.program_id, u.password, u.created_at,
           p.program_name, p.program_level
    FROM users u
    LEFT JOIN programs p ON u.program_id = p.program_id
@@ -114,7 +114,8 @@ app.post("/api/login", async (req, res) => {
                 user_level: user.user_level,
                 program_id: user.program_id,
                 program_name: user.program_name,
-                program_level: user.program_level
+                program_level: user.program_level,
+                created_at: user.created_at
             }
         });
     } catch (err) {
@@ -263,12 +264,12 @@ app.post('/api/register', async (req, res) => {
             userId: result.insertId
         });
 
+        await addLog(null, 'Registration', `New user registered: ${email}`);
+
     } catch (error) {
         console.error('Registration error:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
-
-    await addLog(null, 'Enrollment', `Enrolled in ${selectedCourses.length} courses`);
 });
 
 
@@ -854,7 +855,7 @@ app.get('/api/teacher/students/:facultyId', async (req, res) => {
             JOIN enrollments e ON c.course_id = e.course_id
             JOIN users u ON e.student_id = u.id
             LEFT JOIN grades g ON e.enrollment_id = g.enrollment_id
-            WHERE cf.faculty_id = ?
+            WHERE cf.faculty_id = ? AND e.status = 'enrolled'
             GROUP BY e.enrollment_id
         `, [facultyId]);
 
@@ -986,17 +987,24 @@ app.post('/api/admin/end-term', async (req, res) => {
             course_id: course.course_id
         }));
 
-        // 2. Set all courses to 'not offered'
+        // 2. Update student enrollment statuses
+        // Set 'enrolled' status to 'completed'
+        await connection.query(`UPDATE enrollments SET status = 'completed' WHERE status = 'enrolled'`);
+        
+        // Set 'pending' status to 'rejected'
+        await connection.query(`UPDATE enrollments SET status = 'rejected' WHERE status = 'pending'`);
+
+        // 3. Set all courses to 'not offered'
         await connection.query(`UPDATE courses SET offered = 'not offered' WHERE offered = 'offered'`);
 
-        // 3. Remove all schedules linked to offered courses
+        // 4. Remove all schedules linked to offered courses
         await connection.query(`DELETE FROM schedules WHERE course_id IN (SELECT course_id FROM courses)`);
 
-        // 4. Remove all faculty assignments linked to offered courses
+        // 5. Remove all faculty assignments linked to offered courses
         await connection.query(`DELETE FROM course_faculty WHERE course_id IN (SELECT course_id FROM courses)`);
 
         await connection.commit();
-        res.json({ message: 'Term successfully ended. All offerings reset.' });
+        res.json({ message: 'Term successfully ended. All offerings reset and enrollment statuses updated.' });
     } catch (error) {
         await connection.rollback();
         console.error('End term error:', error);
@@ -1005,7 +1013,7 @@ app.post('/api/admin/end-term', async (req, res) => {
         connection.release();
     }
 
-    await addLog(null, 'End Term', 'Reset all offered courses');
+    await addLog(null, 'End Term', 'Reset all offered courses and updated enrollment statuses');
 });
 
 // ✅ Undo endpoint
@@ -1019,14 +1027,19 @@ app.post('/api/admin/undo-end-term', async (req, res) => {
             return res.status(400).json({ error: 'No previous state to undo.' });
         }
 
+        // Restore course offerings
         for (const course of backups) {
             await connection.query(`UPDATE courses SET offered = 'offered' WHERE course_id = ?`, [course.course_id]);
         }
 
+        // Note: We cannot easily restore enrollment statuses without additional backup data
+        // The enrollment status changes are permanent for data integrity
+        // Students would need to re-enroll for the new term
+
         global._previousOfferedCourses = []; // Clear after undo
 
         await connection.commit();
-        res.json({ message: 'Undo successful. Course offerings restored.' });
+        res.json({ message: 'Undo successful. Course offerings restored. Note: Enrollment statuses remain as they were set when the term ended.' });
     } catch (error) {
         await connection.rollback();
         console.error('Undo error:', error);

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CGS Portal - Home</title>
+    <title>CGS NLUC Portal - Home</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -85,7 +85,7 @@
                 <>
                     {/* Mobile menu */}
                     <div className="md:hidden flex justify-between items-center bg-indigo-700 text-white p-4">
-                        <div className="text-xl font-bold">CGS Portal</div>
+                        <div className="text-xl font-bold">CGS NLUC Portal</div>
                         <button onClick={() => setSidebarOpen(!sidebarOpen)}>
                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -102,7 +102,7 @@
                             {/* Logo */}
                             <div className="flex flex-col items-center p-5 border-b border-green-600">
                                 <img src="assets/images/dmmmsu-logo.png" alt="CGS Logo" className="w-28 h-28 mb-2" />
-                                <div className="text-2xl font-bold">CGS Portal</div>
+                                <div className="text-2xl font-bold">CGS NLUC Portal</div>
                             </div>
 
                             <ul className="flex-1 mt-4 space-y-1 px-4">
@@ -132,7 +132,7 @@
                                     <h2 className="text-xl font-semibold mb-4">Your Account</h2>
                                     <ul className="text-gray-700 space-y-2">
                                         <li><strong>Email:</strong> {user?.email}</li>
-                                        <li><strong>Account Created:</strong> {new Date(user?.created_at).toLocaleString()}</li>
+                                        <li><strong>Account Created:</strong> {user?.created_at ? new Date(user.created_at).toLocaleString() : 'N/A'}</li>
                                     </ul>
                                 </div>
 
@@ -143,7 +143,7 @@
                                             <h3 className="text-lg font-bold text-green-700">{latestAnnouncement.title}</h3>
                                             <p className="text-gray-700 mt-1">{latestAnnouncement.message}</p>
                                             <p className="text-xs text-gray-500 mt-2">
-                                                Posted on: {new Date(latestAnnouncement.created_at).toLocaleString()}
+                                                Posted on: {latestAnnouncement.created_at ? new Date(latestAnnouncement.created_at).toLocaleString() : 'N/A'}
                                             </p>
                                         </div>
                                     ) : (

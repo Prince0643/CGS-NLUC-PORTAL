@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CGS Portal - Checklist</title>
+  <title>CGS NLUC Portal - Checklist</title>
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -17,12 +17,15 @@
       }
 
       #completedCourses,
-      #completedCourses * {
+      #completedCourses *,
+      #transcriptOfRecords,
+      #transcriptOfRecords * {
         visibility: visible;
-        /* Show only completed courses */
+        /* Show only completed courses or transcript */
       }
 
-      #completedCourses {
+      #completedCourses,
+      #transcriptOfRecords {
         position: absolute;
         left: 0;
         top: 0;
@@ -30,26 +33,60 @@
         background: none !important;
         box-shadow: none !important;
         padding: 0 !important;
+        border: none !important;
       }
 
       /* Excel-like table formatting */
-      #completedCourses table {
+      #completedCourses table,
+      #transcriptOfRecords table {
         border-collapse: collapse !important;
         width: 100% !important;
         font-size: 12pt !important;
+        margin-bottom: 20px !important;
       }
 
       #completedCourses th,
-      #completedCourses td {
+      #completedCourses td,
+      #transcriptOfRecords th,
+      #transcriptOfRecords td {
         border: 1px solid black !important;
         padding: 6px !important;
         text-align: center !important;
       }
 
       /* Remove modal/card look */
-      #completedCourses h2 {
+      #completedCourses h2,
+      #transcriptOfRecords h2 {
         display: none;
-        /* Hide title "✅ Completed Courses" */
+        /* Hide section titles */
+      }
+
+      /* Hide view toggle buttons when printing */
+      .view-toggle {
+        display: none !important;
+      }
+
+      /* Show transcript header when printing transcript */
+      .transcript-header {
+        display: block !important;
+        text-align: center !important;
+        margin-bottom: 20px !important;
+      }
+
+      /* Hide transcript header when printing checklist */
+      #completedCourses .transcript-header {
+        display: none !important;
+      }
+    }
+
+    /* Hide transcript header by default on screen */
+    .transcript-header {
+      display: none;
+    }
+
+    @media print {
+      .transcript-header {
+        display: block !important;
       }
     }
   </style>
@@ -66,6 +103,7 @@
       const [isLoading, setIsLoading] = useState(true);
       const [sidebarOpen, setSidebarOpen] = useState(false);
       const [checklist, setChecklist] = useState({ enrolled: [], completed: [] });
+      const [viewMode, setViewMode] = useState('checklist'); // 'checklist' or 'transcript'
 
       // New states for filtering
       const [selectedAY, setSelectedAY] = useState("");
@@ -125,6 +163,35 @@
         );
       });
 
+      // Group completed courses by Academic Year and Term for transcript
+      const groupedTranscript = checklist.completed.reduce((acc, course) => {
+        const key = `${course.academic_year}-${course.term}`;
+        if (!acc[key]) {
+          acc[key] = {
+            academic_year: course.academic_year,
+            term: course.term,
+            courses: []
+          };
+        }
+        acc[key].courses.push(course);
+        return acc;
+      }, {});
+
+      // Sort by Academic Year and Term (oldest first)
+      const sortedTranscriptGroups = Object.values(groupedTranscript).sort((a, b) => {
+        // First sort by academic year
+        const ayComparison = a.academic_year.localeCompare(b.academic_year);
+        if (ayComparison !== 0) return ayComparison;
+
+        // Then sort by term
+        const termOrder = {
+          '1st Semester': 1,
+          '2nd Semester': 2,
+          'Summer': 3
+        };
+        return (termOrder[a.term] || 0) - (termOrder[b.term] || 0);
+      });
+
       if (isLoading) {
         return (
           <div className="flex justify-center items-center h-screen">
@@ -137,7 +204,7 @@
         <>
           {/* Mobile Header */}
           <div className="md:hidden flex justify-between items-center bg-indigo-700 text-white p-4">
-            <div className="text-xl font-bold">CGS Portal</div>
+            <div className="text-xl font-bold">CGS NLUC Portal</div>
             <button onClick={() => setSidebarOpen(!sidebarOpen)}>
               <svg
                 className="w-6 h-6"
@@ -160,9 +227,9 @@
           <div className="flex min-h-screen">
             {/* Sidebar */}
             <aside className="w-64 bg-gradient-to-b from-green-800 to-emerald-700 text-white flex-shrink-0 flex flex-col">
-              <div class="flex flex-col items-center p-5 border-b border-green-600">
-                <img src="assets/images/dmmmsu-logo.png" alt="CGS Logo" class="w-28 h-28 mb-2" />
-                <div class="text-2xl font-bold">CGS Portal</div>
+              <div className="flex flex-col items-center p-5 border-b border-green-600">
+                <img src="assets/images/dmmmsu-logo.png" alt="CGS Logo" className="w-28 h-28 mb-2" />
+                <div className="text-2xl font-bold">CGS NLUC Portal</div>
               </div>
               <ul className="flex-1 mt-4 space-y-1 px-4">
                 <li><a href="home.html" className="block py-2 px-3 rounded hover:bg-green-700 transition">Home</a></li>
@@ -180,7 +247,9 @@
             {/* Main Content */}
             <div className="flex-1 bg-gray-100 p-6">
               <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-gray-800">Checklist</h1>
+                <h1 className="text-3xl font-bold text-gray-800">
+                  {viewMode === 'checklist' ? 'Checklist' : 'Official Transcript of Records'}
+                </h1>
                 <div className="flex gap-2">
                   <button
                     onClick={handlePrint}
@@ -197,36 +266,144 @@
                 </div>
               </div>
 
-              {/* Dropdown Filters */}
-              <div className="flex gap-4 mb-6">
-                <select
-                  value={selectedAY}
-                  onChange={(e) => setSelectedAY(e.target.value)}
-                  className="border rounded px-3 py-2"
+              {/* View Toggle Buttons */}
+              <div className="flex gap-2 mb-6 view-toggle">
+                <button
+                  onClick={() => setViewMode('checklist')}
+                  className={`px-4 py-2 rounded transition ${viewMode === 'checklist'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    }`}
                 >
-                  <option value="">All Academic Years</option>
-                  {[...new Set(checklist.completed.map(c => c.academic_year))].map((ay, i) => (
-                    <option key={i} value={ay}>{ay}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={selectedTerm}
-                  onChange={(e) => setSelectedTerm(e.target.value)}
-                  className="border rounded px-3 py-2"
+                  Checklist View
+                </button>
+                <button
+                  onClick={() => setViewMode('transcript')}
+                  className={`px-4 py-2 rounded transition ${viewMode === 'transcript'
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+                    }`}
                 >
-                  <option value="">All Terms</option>
-                  {[...new Set(checklist.completed.map(c => c.term))].map((t, i) => (
-                    <option key={i} value={t}>{t}</option>
-                  ))}
-                </select>
+                  Transcript View
+                </button>
               </div>
 
-              {/* Sections */}
-              <div className="space-y-6">
-                <ChecklistSection title="✅ Completed Courses" data={filteredCompleted} user={user} />
-                <ChecklistSection title="📘 Enrolled Courses" data={checklist.enrolled} user={user} />
-              </div>
+              {viewMode === 'checklist' ? (
+                <>
+                  {/* Dropdown Filters */}
+                  <div className="flex gap-4 mb-6">
+                    <select
+                      value={selectedAY}
+                      onChange={(e) => setSelectedAY(e.target.value)}
+                      className="border rounded px-3 py-2"
+                    >
+                      <option value="">All Academic Years</option>
+                      {[...new Set(checklist.completed.map(c => c.academic_year))].map((ay, i) => (
+                        <option key={i} value={ay}>{ay}</option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={selectedTerm}
+                      onChange={(e) => setSelectedTerm(e.target.value)}
+                      className="border rounded px-3 py-2"
+                    >
+                      <option value="">All Terms</option>
+                      {[...new Set(checklist.completed.map(c => c.term))].map((t, i) => (
+                        <option key={i} value={t}>{t}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Sections */}
+                  <div className="space-y-6">
+                    <ChecklistSection title="✅ Completed Courses" data={filteredCompleted} user={user} />
+                    <ChecklistSection title="📘 Enrolled Courses" data={checklist.enrolled} user={user} />
+                  </div>
+                </>
+              ) : (
+                /* Transcript View */
+                <div id="transcriptOfRecords" className="bg-white rounded-lg shadow p-6">
+                  <div className="transcript-header">
+                    <div className="flex justify-center items-center mb-4">
+                      <img src="assets/images/dmmmsu-logo.png" alt="DMMMSU Logo" className="w-20 h-20" />
+                    </div>
+                    <h3 className="text-center font-bold text-lg">
+                      DON MARIANO MARCOS MEMORIAL STATE UNIVERSITY
+                    </h3>
+                    <h3 className="text-center font-bold text-lg">
+                      NORTH LA UNION CAMPUS
+                    </h3>
+                    <h3 className="text-center font-bold text-lg">
+                      BACNOTAN, LA UNION
+                    </h3>
+                    <p className="text-center font-bold mt-2">
+                      {user?.program_name}
+                    </p>
+                    <p className="text-center font-bold text-lg mt-4">
+                      <u>OFFICIAL TRANSCRIPT OF RECORDS</u>
+                    </p>
+
+                    <div className="mt-4 text-left">
+                      <p><strong>Name:</strong> {user?.full_name || "Student Name"}</p>
+                      <p><strong>Date Generated:</strong> {new Date().toLocaleDateString()}</p>
+                    </div>
+                  </div>
+
+                  {sortedTranscriptGroups.length === 0 ? (
+                    <p className="text-center text-gray-500 mt-8">No academic records found.</p>
+                  ) : (
+                    <div className="space-y-8">
+                      {sortedTranscriptGroups.map((group, groupIndex) => (
+                        <div key={groupIndex} className="border border-white rounded-lg overflow-hidden">
+                          <div className="bg-gray-100 px-4 py-3 border-b border-gray-300">
+                            <h4 className="font-bold text-lg">
+                              Academic Year: {group.academic_year} | Term: {group.term}
+                            </h4>
+                          </div>
+                          <table className="w-full text-sm">
+                            <thead>
+                              <tr className="bg-gray-200">
+                                <th className="px-3 py-2 border border-gray-300">Course Code</th>
+                                <th className="px-3 py-2 border border-gray-300">Description</th>
+                                <th className="px-3 py-2 border border-gray-300">Units</th>
+                                <th className="px-3 py-2 border border-gray-300">Grade</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {group.courses.map((course, courseIndex) => (
+                                <tr key={courseIndex}>
+                                  <td className="px-3 py-2 border border-gray-300 text-center">{course.course_code}</td>
+                                  <td className="px-3 py-2 border border-gray-300">{course.course_description}</td>
+                                  <td className="px-3 py-2 border border-gray-300 text-center">{course.units}</td>
+                                  <td className="px-3 py-2 border border-gray-300 text-center font-bold">{course.grade}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                            <tfoot>
+                              <tr className="bg-gray-50">
+                                <td colSpan="2" className="px-3 py-2 border border-gray-300 text-right font-bold">
+                                  Total Units:
+                                </td>
+                                <td className="px-3 py-2 border border-gray-300 text-center font-bold">
+                                  {group.courses.reduce((sum, course) => sum + (parseFloat(course.units) || 0), 0)}
+                                </td>
+                                <td className="px-3 py-2 border border-gray-300"></td>
+                              </tr>
+                            </tfoot>
+                          </table>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-8 text-sm text-center">
+                    <p><em>This is an official transcript of records generated by the CGS Portal system.</em></p>
+                    <p className="mt-2">Registrar's Office – CGS Portal</p>
+                    <p className="mt-1">Generated on: {new Date().toLocaleString()}</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </>
@@ -252,13 +429,21 @@
           {title.includes("Completed") && (
             <>
               <div className="print-header">
+                <div className="flex justify-center items-center mb-4">
+                  <img src="assets/images/dmmmsu-logo.png" alt="DMMMSU Logo" className="w-20 h-20" />
+                </div>
                 <h3 className="text-center font-bold text-lg">
-                  Don Mariano Marcos Memorial State University
+                  DON MARIANO MARCOS MEMORIAL STATE UNIVERSITY
                 </h3>
-                <p className="text-center">Graduate School - Student Grades</p>
+                <h3 className="text-center font-bold text-lg">
+                  NORTH LA UNION CAMPUS
+                </h3>
+                <h3 className="text-center font-bold text-lg">
+                  BACNOTAN, LA UNION
+                </h3>
+                <p className="text-center font-bold"><u>{user?.program_name}</u></p>
                 <br />
                 <p><strong>Name:</strong> {displayName}</p>
-                <p><strong>Program:</strong> {user?.program_name}</p>
               </div>
             </>
           )}
@@ -277,8 +462,6 @@
                   {title.includes("Completed") && (
                     <>
                       <th className="px-3 py-2 border">Grade</th>
-                      <th className="px-3 py-2 border">AY</th>
-                      <th className="px-3 py-2 border">Term</th>
                     </>
                   )}
                 </tr>
@@ -292,8 +475,6 @@
                     {title.includes("Completed") && (
                       <>
                         <td className="px-3 py-1 border text-center">{course.grade}</td>
-                        <td className="px-3 py-1 border text-center">{course.academic_year}</td>
-                        <td className="px-3 py-1 border text-center">{course.term}</td>
                       </>
                     )}
                   </tr>
@@ -305,7 +486,7 @@
           {title.includes("Completed") && (
             <div className="print-footer mt-6 text-sm">
               <p><em>This is a system-generated copy of your grades.</em></p>
-              <p>Registrar’s Office – CGS Portal</p>
+              <p>Registrar's Office – CGS Portal</p>
             </div>
           )}
         </div>

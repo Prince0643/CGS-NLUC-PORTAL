@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CGS Portal - Teacher Home</title>
+    <title>CGS NLUC Portal - Faculty</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -43,10 +43,10 @@
                     const res = await fetch(`http://localhost:5000/api/faculty/by-user/${userId}`);
                     const data = await res.json();
                     // after fetching faculty by user
-if (data.faculty_id) {
-  setFacultyId(data.faculty_id);   // add this
-  fetchStudents(data.faculty_id);
-} else {
+                    if (data.faculty_id) {
+                        setFacultyId(data.faculty_id);   // add this
+                        fetchStudents(data.faculty_id);
+                    } else {
                         setIsLoading(false);
                     }
                 } catch (err) {
@@ -116,7 +116,7 @@ if (data.faculty_id) {
 
                             <div className="flex flex-col items-center p-5 border-b border-green-600">
                                 <img src="assets/images/dmmmsu-logo.png" alt="CGS Logo" className="w-28 h-28 mb-2" />
-                                <div className="text-2xl font-bold">CGS Portal</div>
+                                <div className="text-2xl font-bold">CGS NLUC Portal</div>
                             </div>
 
                             <ul className="flex-1 mt-4 space-y-1 px-4">
@@ -145,74 +145,85 @@ if (data.faculty_id) {
                             <div className="bg-white rounded-lg shadow p-6">
                                 <h2 className="text-xl font-semibold mb-4">Students in Your Courses</h2>
 
-                                {/* Tabs */}
-                                <div className="mb-4 flex flex-wrap gap-2">
-                                    {Object.entries(grouped).map(([code, info]) => (
-                                        <button
-                                            key={code}
-                                            className={`px-4 py-1 rounded border ${activeCourse === code
-                                                ? 'bg-green-600 text-white'
-                                                : 'bg-white text-green-600 border-green-600 hover:bg-green-100'
-                                                }`}
-                                            onClick={() => setActiveCourse(code)}
-                                        >
-                                            {code}
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Table */}
-                                {activeCourse && grouped[activeCourse] ? (
-                                    <div className="overflow-x-auto">
-                                        <h3 className="text-lg font-medium mb-2">{grouped[activeCourse].course_description}</h3>
-                                        <table className="w-full text-sm border border-gray-200">
-                                            <thead>
-                                                <tr className="bg-gray-100 text-left">
-                                                    <th className="p-2 border">Student</th>
-                                                    <th className="p-2 border">Email</th>
-                                                    <th className="p-2 border">Grade</th>
-                                                    <th className="p-2 border">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {grouped[activeCourse].students.map((s, i) => (
-                                                    <tr key={i}>
-                                                        <td className="p-2 border">{s.student_name}</td>
-                                                        <td className="p-2 border">{s.student_email}</td>
-                                                        <td className="p-2 border">{s.grade ?? 'N/A'}</td>
-                                                        <td className="p-2 border">
-                                                            <button
-                                                                onClick={() => {
-                                                                    const grade = prompt(`Enter grade for ${s.student_name}:`, s.grade || '');
-                                                                    if (grade) {
-                                                                        fetch('http://localhost:5000/api/teacher/grades', {
-                                                                            method: 'POST',
-                                                                            headers: { 'Content-Type': 'application/json' },
-                                                                            body: JSON.stringify({ enrollment_id: s.enrollment_id, grade })
-                                                                        })
-                                                                            .then(res => res.json())
-                                                                            .then(data => {
-                                                                                if (data.success) {
-                                                                                    alert('Grade saved successfully.');
-                                                                                    if (facultyId) fetchStudents(facultyId); // ✅ reload with state
-                                                                                } else {
-                                                                                    alert('Failed to save grade.');
-                                                                                }
-                                                                            });
-                                                                    }
-                                                                }}
-                                                                className="text-sm px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-                                                            >
-                                                                Post Grade
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                {/* Check if there are any enrolled students */}
+                                {Object.keys(grouped).length === 0 ? (
+                                    <div className="text-center py-8">
+                                        <div className="text-gray-500 text-lg mb-2">No Enrolled Students</div>
+                                        <p className="text-gray-400">You currently have no students with "enrolled" status in your courses.</p>
+                                        <p className="text-gray-400 text-sm mt-2">Students with pending, completed, or rejected status are not displayed here.</p>
                                     </div>
                                 ) : (
-                                    <p className="text-gray-600">No students found for selected course.</p>
+                                    <>
+                                        {/* Tabs */}
+                                        <div className="mb-4 flex flex-wrap gap-2">
+                                            {Object.entries(grouped).map(([code, info]) => (
+                                                <button
+                                                    key={code}
+                                                    className={`px-4 py-1 rounded border ${activeCourse === code
+                                                        ? 'bg-green-600 text-white'
+                                                        : 'bg-white text-green-600 border-green-600 hover:bg-green-100'
+                                                        }`}
+                                                    onClick={() => setActiveCourse(code)}
+                                                >
+                                                    {code}
+                                                </button>
+                                            ))}
+                                        </div>
+
+                                        {/* Table */}
+                                        {activeCourse && grouped[activeCourse] ? (
+                                            <div className="overflow-x-auto">
+                                                <h3 className="text-lg font-medium mb-2">{grouped[activeCourse].course_description}</h3>
+                                                <table className="w-full text-sm border border-gray-200">
+                                                    <thead>
+                                                        <tr className="bg-gray-100 text-left">
+                                                            <th className="p-2 border">Student</th>
+                                                            <th className="p-2 border">Email</th>
+                                                            <th className="p-2 border">Grade</th>
+                                                            <th className="p-2 border">Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {grouped[activeCourse].students.map((s, i) => (
+                                                            <tr key={i}>
+                                                                <td className="p-2 border">{s.student_name}</td>
+                                                                <td className="p-2 border">{s.student_email}</td>
+                                                                <td className="p-2 border">{s.grade ?? 'N/A'}</td>
+                                                                <td className="p-2 border">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const grade = prompt(`Enter grade for ${s.student_name}:`, s.grade || '');
+                                                                            if (grade) {
+                                                                                fetch('http://localhost:5000/api/teacher/grades', {
+                                                                                    method: 'POST',
+                                                                                    headers: { 'Content-Type': 'application/json' },
+                                                                                    body: JSON.stringify({ enrollment_id: s.enrollment_id, grade })
+                                                                                })
+                                                                                    .then(res => res.json())
+                                                                                    .then(data => {
+                                                                                        if (data.success) {
+                                                                                            alert('Grade saved successfully.');
+                                                                                            if (facultyId) fetchStudents(facultyId); // ✅ reload with state
+                                                                                        } else {
+                                                                                            alert('Failed to save grade.');
+                                                                                        }
+                                                                                    });
+                                                                            }
+                                                                        }}
+                                                                        className="text-sm px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+                                                                    >
+                                                                        Post Grade
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        ) : (
+                                            <p className="text-gray-600">No students found for selected course.</p>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
